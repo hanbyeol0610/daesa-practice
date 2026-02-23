@@ -7,43 +7,62 @@
 
 <style>
 body {
+    background-color: #111;
+    color: white;
     font-family: sans-serif;
     padding: 20px;
-    background-color: #f5f5f5;
 }
 
 h1 {
     text-align: center;
 }
 
-textarea {
+.container {
+    background: #1e1e1e;
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+}
+
+input, textarea, select {
     width: 100%;
-    height: 120px;
-    font-size: 16px;
-    margin-bottom: 15px;
     padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: none;
+    background: #333;
+    color: white;
+    font-size: 16px;
 }
 
 button {
     width: 100%;
     padding: 15px;
-    font-size: 18px;
     margin-top: 10px;
-    border: none;
     border-radius: 10px;
-    background-color: #007AFF;
+    border: none;
+    font-size: 18px;
+    background: #007AFF;
     color: white;
 }
 
-.controls {
-    margin-bottom: 20px;
-    background: white;
-    padding: 15px;
-    border-radius: 10px;
+button.secondary {
+    background: #444;
 }
 
-label {
-    font-weight: bold;
+.dialogBox {
+    background: #222;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 10px;
+    font-size: 18px;
+    min-height: 60px;
+}
+
+.myLine {
+    color: #00ff88;
+    margin-top: 10px;
 }
 </style>
 </head>
@@ -52,36 +71,55 @@ label {
 
 <h1>🎭 대사연습</h1>
 
-<div class="controls">
+<div class="container">
 
-<label>목소리 선택</label><br>
+<label>내 배역</label>
+<input id="myRole" placeholder="예: 조판수">
+
+<label>목소리 선택</label>
 <select id="voiceSelect">
-    <option value="male">남자</option>
-    <option value="female">여자</option>
+<option value="male">남자</option>
+<option value="female">여자</option>
 </select>
 
-<br><br>
-
-<label>대사 속도: <span id="speedValue">1</span></label><br>
+<label>대사 속도: <span id="speedValue">1</span></label>
 <input type="range" id="speedControl" min="0.5" max="2" step="0.1" value="1">
 
 </div>
 
-<label>상대방 대사</label>
-<textarea id="dialogue" placeholder="상대 배우 대사를 입력하세요"></textarea>
+<div class="container">
 
-<button onclick="speak()">▶ 대사 재생</button>
-<button onclick="stopSpeak()">⏹ 정지</button>
+<label>대본 입력 (배역:대사 형식)</label>
+<textarea id="scriptInput" rows="10" placeholder="조판수: 전화 왜 안 받았어?
+이강희: 바빴어
+조판수: 다음부터는 받아"></textarea>
+
+</div>
+
+<div class="container">
+
+<button onclick="startPractice()">🎬 연습 시작</button>
+<button onclick="prevLine()" class="secondary">⬅ 이전</button>
+<button onclick="nextLine()">➡ 다음</button>
+<button onclick="speak()">🔊 상대 대사</button>
+<button onclick="showMyLine()" class="secondary">📖 내 대사</button>
+
+</div>
+
+<div class="container">
+
+<div>🎭 상대 대사</div>
+<div id="otherDisplay" class="dialogBox"></div>
+
+<div id="myDisplay" class="myLine"></div>
+
+</div>
 
 <script>
 
-let voices = [];
-
-function loadVoices() {
-    voices = speechSynthesis.getVoices();
-}
-
-speechSynthesis.onvoiceschanged = loadVoices;
+let script = [];
+let currentIndex = -1;
+let myRole = "";
 
 const speedControl = document.getElementById("speedControl");
 const speedValue = document.getElementById("speedValue");
@@ -90,16 +128,73 @@ speedControl.addEventListener("input", () => {
     speedValue.textContent = speedControl.value;
 });
 
+function parseScript() {
+    const text = document.getElementById("scriptInput").value;
+    const lines = text.split("\n");
+
+    script = [];
+
+    lines.forEach(line => {
+        const parts = line.split(":");
+        if(parts.length >= 2){
+            script.push({
+                role: parts[0].trim(),
+                line: parts.slice(1).join(":").trim()
+            });
+        }
+    });
+}
+
+function startPractice() {
+    parseScript();
+    myRole = document.getElementById("myRole").value.trim();
+    currentIndex = -1;
+    nextLine();
+}
+
+function nextLine() {
+    for(let i = currentIndex + 1; i < script.length; i++) {
+        if(script[i].role !== myRole){
+            currentIndex = i;
+            showLine();
+            return;
+        }
+    }
+}
+
+function prevLine() {
+    for(let i = currentIndex - 1; i >= 0; i--) {
+        if(script[i].role !== myRole){
+            currentIndex = i;
+            showLine();
+            return;
+        }
+    }
+}
+
+function showLine() {
+    document.getElementById("otherDisplay").innerText =
+        script[currentIndex].role + ": " + script[currentIndex].line;
+
+    document.getElementById("myDisplay").innerText = "";
+}
+
+function showMyLine() {
+
+    for(let i = currentIndex + 1; i < script.length; i++) {
+        if(script[i].role === myRole){
+            document.getElementById("myDisplay").innerText =
+                myRole + ": " + script[i].line;
+            return;
+        }
+    }
+}
+
 function speak() {
 
-    const text = document.getElementById("dialogue").value;
-    const voiceType = document.getElementById("voiceSelect").value;
+    const text = script[currentIndex].line;
     const speed = parseFloat(speedControl.value);
-
-    if (!text) {
-        alert("대사를 입력하세요");
-        return;
-    }
+    const voiceType = document.getElementById("voiceSelect").value;
 
     speechSynthesis.cancel();
 
@@ -108,27 +203,15 @@ function speak() {
     utterance.rate = speed;
     utterance.lang = "ko-KR";
 
-    if (voices.length > 0) {
+    const voices = speechSynthesis.getVoices();
 
-        if (voiceType === "female") {
-            utterance.voice = voices.find(v => 
-                v.name.includes("Female") ||
-                v.name.includes("여")
-            ) || voices[0];
-        } else {
-            utterance.voice = voices.find(v => 
-                v.name.includes("Male") ||
-                v.name.includes("남")
-            ) || voices[0];
-        }
-
+    if (voiceType === "female") {
+        utterance.voice = voices.find(v => v.name.includes("Female")) || voices[0];
+    } else {
+        utterance.voice = voices.find(v => v.name.includes("Male")) || voices[0];
     }
 
     speechSynthesis.speak(utterance);
-}
-
-function stopSpeak() {
-    speechSynthesis.cancel();
 }
 
 </script>
