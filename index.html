@@ -1,0 +1,189 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>대사 연습 바로실행</title>
+
+<style>
+body {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    margin:0;
+    padding:15px;
+    background:#111;
+    color:white;
+}
+h1 {
+    text-align:center;
+    font-size:22px;
+}
+input, textarea {
+    width:100%;
+    font-size:18px;
+    padding:12px;
+    margin-top:10px;
+    border-radius:12px;
+    border:none;
+}
+textarea {
+    height:180px;
+}
+button {
+    width:100%;
+    font-size:20px;
+    padding:15px;
+    margin-top:10px;
+    border-radius:15px;
+    border:none;
+    background:#2a2a2a;
+    color:white;
+}
+.card {
+    background:#1e1e1e;
+    padding:20px;
+    border-radius:20px;
+    margin-top:20px;
+}
+.line {
+    font-size:22px;
+    margin-top:10px;
+    line-height:1.4;
+}
+.hidden {
+    display:none;
+}
+#startScreen {
+    text-align:center;
+    margin-top:40px;
+}
+#app {
+    display:none;
+}
+.bigButton {
+    font-size:24px;
+    padding:20px;
+    background:#444;
+}
+</style>
+</head>
+<body>
+
+<div id="startScreen">
+    <h1>🎬 대사 연습</h1>
+    <button class="bigButton" onclick="enterApp()">연습 시작</button>
+</div>
+
+<div id="app">
+
+<div>내 역할</div>
+<input id="myRole" placeholder="예: 조판수">
+
+<div>대본 입력 (이름: 대사)</div>
+<textarea id="scriptText" placeholder="이강희: 왜 전화 안 받아?
+조판수: 죄송합니다 형님
+이강희: 어디야?
+조판수: 밖입니다"></textarea>
+
+<button onclick="loadScript()">대본 불러오기</button>
+<button onclick="startPractice()">연습 시작</button>
+<button onclick="prevLine()">◀ 이전</button>
+<button onclick="nextLine()">다음 ▶</button>
+<button onclick="showMyLine()">내 대사 보기</button>
+
+<div class="card">
+    <div id="partner" class="line">연습 시작을 누르세요</div>
+    <div id="mine" class="line hidden"></div>
+</div>
+
+</div>
+
+<script>
+let script = [];
+let index = 0;
+let myRole = "";
+
+function enterApp(){
+    document.getElementById("startScreen").style.display="none";
+    document.getElementById("app").style.display="block";
+}
+
+function loadScript() {
+    const text = document.getElementById("scriptText").value;
+    const lines = text.split("\n");
+    script = [];
+
+    lines.forEach(line => {
+        let match = line.match(/^(.+?):\s*(.+)$/);
+        if(match) {
+            script.push({
+                role: match[1].trim(),
+                text: match[2].trim()
+            });
+        }
+    });
+
+    alert("대본 준비 완료");
+}
+
+function startPractice() {
+    myRole = document.getElementById("myRole").value.trim();
+    if(!myRole) {
+        alert("내 역할 입력하세요");
+        return;
+    }
+
+    index = 0;
+    nextLine();
+}
+
+function nextLine() {
+    while(index < script.length) {
+        let line = script[index];
+        index++;
+
+        if(line.role !== myRole) {
+            showPartner(line);
+            return;
+        }
+    }
+    document.getElementById("partner").innerText = "끝";
+}
+
+function prevLine() {
+    index -= 2;
+    if(index < 0) index = 0;
+    nextLine();
+}
+
+function showPartner(line) {
+    document.getElementById("partner").innerText =
+        line.role + ": " + line.text;
+
+    document.getElementById("mine").classList.add("hidden");
+
+    speak(line.text);
+}
+
+function showMyLine() {
+    for(let i=index; i<script.length; i++) {
+        if(script[i].role === myRole) {
+            let el = document.getElementById("mine");
+            el.innerText = myRole + ": " + script[i].text;
+            el.classList.remove("hidden");
+            return;
+        }
+    }
+}
+
+function speak(text) {
+    speechSynthesis.cancel();
+    let utter = new SpeechSynthesisUtterance(text);
+    utter.lang = "ko-KR";
+    utter.rate = 0.95;
+    speechSynthesis.speak(utter);
+}
+</script>
+
+</body>
+</html>
