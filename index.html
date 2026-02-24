@@ -235,6 +235,11 @@ font-size:14px;
 <button class="small" onclick="saveScript()">💾 저장</button>
 <button class="small" onclick="loadScript()">📂 불러오기</button>
 
+<br>
+  
+<button onclick="pauseTimer()">일시정지</button>
+<button onclick="resumeTimer()">다시하기</button>
+  
 <br><br>
 
 연습횟수:
@@ -243,6 +248,11 @@ font-size:14px;
 </div>
 
 <script>
+let timerInterval = null;
+let remainingTime = 0;
+let totalTime = 0;
+let startTime = 0;
+let paused = false;
 
 let lines=[];
 let index=0;
@@ -256,8 +266,8 @@ let autoTimer=null;
 let remainingTime=0;
 let startTime=0;
 
-let gaugeStartPercent = 100;
-let pausedPercent = 100;
+let gaugeStartPercent=100;
+let pausedPercent=100;
 
 const synth=window.speechSynthesis;
 
@@ -409,6 +419,46 @@ document.getElementById("gaugeBar").style.width="100%";
 
 }
 
+function pauseTimer(){
+
+    if(paused) return;
+
+    clearInterval(timerInterval);
+
+    let elapsed = (Date.now() - startTime)/1000;
+    remainingTime = totalTime - elapsed;
+
+    paused = true;
+}
+
+function resumeTimer(){
+
+    if(!paused) return;
+
+    startTime = Date.now();
+    totalTime = remainingTime;
+    paused = false;
+
+    const gauge = document.getElementById("gauge");
+
+    clearInterval(timerInterval);
+
+    timerInterval = setInterval(()=>{
+
+        let elapsed = (Date.now() - startTime)/1000;
+        remainingTime = totalTime - elapsed;
+
+        if(remainingTime <= 0){
+            clearInterval(timerInterval);
+            nextLine();
+            return;
+        }
+
+        let percent = (remainingTime / totalTime) * 100;
+        gauge.style.width = percent + "%";
+
+    },50);
+}
 function autoNext(){
 
 if(!autoMode || paused) return;
