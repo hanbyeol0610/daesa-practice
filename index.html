@@ -8,75 +8,96 @@
 
 body{
     margin:0;
-    background:#79c763;
-    font-family:sans-serif;
-    text-align:center;
+    background:#111;
+    color:white;
+    font-family: 'Courier New', monospace;
 }
 
 .container{
-    max-width:700px;
+    max-width:800px;
     margin:auto;
-    padding:10px;
+    padding:20px;
 }
 
 .banner{
     width:100%;
-    border:4px solid black;
-    margin-bottom:10px;
+    margin-bottom:20px;
+    border:2px solid #333;
+}
+
+.title{
+    text-align:center;
+    font-size:28px;
+    letter-spacing:4px;
+    margin-bottom:20px;
 }
 
 .scriptBox{
-    background:white;
-    padding:20px;
-    border:4px solid black;
-    font-size:24px;
-    min-height:120px;
+    background:#000;
+    border:2px solid #333;
+    padding:30px;
+    font-size:28px;
+    min-height:140px;
+    text-align:center;
+    line-height:1.5;
 }
 
 .myLine{
     margin-top:10px;
-    background:#fff3a0;
-    padding:15px;
-    border:3px dashed black;
-    font-size:22px;
+    padding:20px;
+    border:1px dashed #777;
+    font-size:24px;
     display:none;
+    color:#ccc;
 }
 
 .controls{
-    margin-top:10px;
+    margin-top:20px;
 }
 
 button{
-    font-size:20px;
+    font-size:22px;
     padding:15px;
-    margin-top:5px;
+    margin-top:10px;
     width:100%;
-    border:3px solid black;
-    background:#ffd800;
+    background:#222;
+    color:white;
+    border:1px solid #555;
+}
+
+.bigBtn{
+    font-size:28px;
+    padding:25px;
+    background:#e0b000;
+    color:black;
+    font-weight:bold;
 }
 
 textarea{
     width:100%;
-    height:140px;
-    font-size:16px;
+    height:150px;
+    background:#000;
+    color:#ccc;
+    border:1px solid #444;
     margin-top:10px;
-    border:3px solid black;
+    font-size:16px;
 }
 
 input{
     width:100%;
-    padding:10px;
+    padding:15px;
+    background:#000;
+    color:white;
+    border:1px solid #444;
+    margin-top:10px;
     font-size:18px;
-    border:3px solid black;
-    margin-top:5px;
 }
 
 .counter{
-    font-size:22px;
-    margin:10px;
-    background:white;
-    border:3px solid black;
-    padding:10px;
+    text-align:center;
+    margin:15px 0;
+    font-size:20px;
+    color:#aaa;
 }
 
 </style>
@@ -89,10 +110,14 @@ input{
 
 <img src="banner.png" class="banner">
 
-<input id="myRole" placeholder="내 역할 이름 입력 (예: 판수)">
+<div class="title">
+SCRIPT PRACTICE
+</div>
+
+<input id="myRole" placeholder="내 역할 이름 입력">
 
 <div class="counter" id="counter">
-0번 연습!
+0번 연습
 </div>
 
 <textarea id="scriptInput">
@@ -103,19 +128,20 @@ input{
 </textarea>
 
 <div class="scriptBox" id="otherLine">
-연습 시작 누르세요
+연습 시작
 </div>
 
-<div class="myLine" id="myLine">
-내 대사
-</div>
+<div class="myLine" id="myLine"></div>
 
 <div class="controls">
 
 <button onclick="startPractice()">연습 시작</button>
+
 <button onclick="showMyLine()">내 대사 보기</button>
-<button onclick="nextLine()">다음</button>
-<button onclick="prevLine()">이전</button>
+
+<button class="bigBtn" onclick="prevLine()">◀ 이전</button>
+
+<button class="bigBtn" onclick="nextLine()">다음 ▶</button>
 
 </div>
 
@@ -142,14 +168,7 @@ function speak(text){
 
     utter.lang = "ko-KR";
     utter.rate = 0.95;
-    utter.pitch = 1.0;
-
-    const voices = speechSynthesis.getVoices();
-    let voice = voices.find(v => v.lang.includes("ko"));
-
-    if(voice){
-        utter.voice = voice;
-    }
+    utter.pitch = 0.9;
 
     speechSynthesis.speak(utter);
 }
@@ -157,17 +176,19 @@ function speak(text){
 function startPractice(){
 
     parseScript();
+
     myRole = document.getElementById("myRole").value.trim();
 
     if(myRole === ""){
-        alert("내 역할 이름을 입력하세요");
+        alert("역할 이름 입력");
         return;
     }
 
     repeatCount++;
-    document.getElementById("counter").innerText = repeatCount + "번 연습!";
+    document.getElementById("counter").innerText = repeatCount + "번 연습";
 
     index = -1;
+
     nextLine();
 }
 
@@ -175,51 +196,72 @@ function nextLine(){
 
     document.getElementById("myLine").style.display="none";
 
-    index++;
+    for(let i=0;i<lines.length;i++){
 
-    if(index >= lines.length){
-        index = 0;
+        index++;
+
+        if(index >= lines.length){
+            index = 0;
+        }
+
+        let line = lines[index];
+
+        if(!line.includes(":")) continue;
+
+        let role = line.split(":")[0].trim();
+        let text = line.split(":")[1].trim();
+
+        if(role !== myRole){
+
+            document.getElementById("otherLine").innerText = text;
+
+            myLineText = "";
+            speak(text);
+
+            return;
+        }
+        else{
+            myLineText = text;
+        }
+
     }
 
-    processLine();
 }
 
 function prevLine(){
 
     document.getElementById("myLine").style.display="none";
 
-    index--;
+    for(let i=0;i<lines.length;i++){
 
-    if(index < 0){
-        index = lines.length - 1;
-    }
+        index--;
 
-    processLine();
-}
+        if(index < 0){
+            index = lines.length-1;
+        }
 
-function processLine(){
+        let line = lines[index];
 
-    let line = lines[index];
+        if(!line.includes(":")) continue;
 
-    if(!line.includes(":")) return;
+        let role = line.split(":")[0].trim();
+        let text = line.split(":")[1].trim();
 
-    let role = line.split(":")[0].trim();
-    let text = line.split(":")[1].trim();
+        if(role !== myRole){
 
-    if(role === myRole){
+            document.getElementById("otherLine").innerText = text;
 
-        myLineText = text;
-        document.getElementById("otherLine").innerText = "(내 대사 차례)";
+            myLineText = "";
+            speak(text);
 
-    }
-    else{
-
-        document.getElementById("otherLine").innerText = text;
-        speak(text);
-
-        myLineText = "";
+            return;
+        }
+        else{
+            myLineText = text;
+        }
 
     }
+
 }
 
 function showMyLine(){
