@@ -8,7 +8,7 @@
 
 body{
     margin:0;
-    background:#1b1b1b;
+    background:#181818;
     color:#eee;
     font-family:Arial;
 }
@@ -24,27 +24,52 @@ body{
     margin-bottom:15px;
 }
 
-input, textarea, select{
-    width:100%;
+/* 영화 스크립트 느낌 */
+.roleBox{
+    background:#0f0f0f;
+    border:2px solid #c9a646;
+    font-size:18px;
+    letter-spacing:2px;
     padding:12px;
-    margin-top:8px;
-    background:#111;
-    color:white;
-    border:1px solid #555;
-    font-size:16px;
+    width:100%;
 }
 
-textarea{
+.scriptInput{
+    background:#0f0f0f;
+    border:2px solid #c9a646;
+    font-family:monospace;
+    font-size:18px;
+    line-height:1.8;
+    padding:12px;
+    width:100%;
     height:300px;
+    margin-top:10px;
 }
 
+/* 상대 대사 */
 .scriptBox{
     background:#111;
     border:1px solid #666;
     padding:20px;
-    font-size:22px;
-    min-height:60px;
+    font-size:24px;
+    min-height:80px;
     text-align:center;
+    margin-top:10px;
+}
+
+/* HP 게이지 */
+.hpContainer{
+    width:100%;
+    height:14px;
+    background:#333;
+    margin-top:5px;
+}
+
+.hpBar{
+    height:100%;
+    width:100%;
+    background:#4caf50;
+    transition:width 0.1s linear;
 }
 
 .myLine{
@@ -89,6 +114,15 @@ button{
     font-size:18px;
 }
 
+.row{
+    display:flex;
+    gap:10px;
+}
+
+.autoBtn{
+    background:#2e7d32;
+}
+
 </style>
 </head>
 
@@ -98,13 +132,7 @@ button{
 
 <img src="banner.png" class="banner">
 
-<input id="myRole" placeholder="내 역할 (예: 종대)">
-
-<select id="voiceType">
-<option value="auto">자동 음성</option>
-<option value="female">여자톤</option>
-<option value="male">남자톤</option>
-</select>
+<input id="myRole" class="roleBox" placeholder="CASTING ROLE">
 
 <select id="speed">
 <option value="0.8">느림</option>
@@ -116,7 +144,7 @@ button{
 0번 연습
 </div>
 
-<textarea id="scriptInput">
+<textarea id="scriptInput" class="scriptInput">
 종대: 형님 왜 그러십니까
 판수: 넌 빠져
 종대: 이번엔 다릅니다
@@ -127,13 +155,23 @@ button{
 &lt;상대 대사&gt;
 </div>
 
+<div class="hpContainer">
+<div class="hpBar" id="hpBar"></div>
+</div>
+
 <div class="myLine" id="myLine"></div>
 
 <button onclick="startPractice()">연습 시작</button>
 <button onclick="showMyLine()">내 대사 보기</button>
 
+<div class="row">
 <button class="bigBtn" onclick="prevLine()">◀ 이전</button>
 <button class="bigBtn" onclick="nextLine()">다음 ▶</button>
+</div>
+
+<button class="autoBtn" onclick="toggleAuto()">
+자동 연습
+</button>
 
 <div class="iconRow">
 <button class="iconBtn" onclick="saveScript()">💾</button>
@@ -154,13 +192,13 @@ let index = -1;
 let myRole = "";
 let currentMyLine = "";
 let repeatCount = 0;
+let autoMode = false;
+let autoTimer;
 let mediaRecorder;
 let audioChunks = [];
-let audioBlob;
 
 function parseScript(){
-    let text = document.getElementById("scriptInput").value;
-    lines = text.split("\n");
+    lines = document.getElementById("scriptInput").value.split("\n");
 }
 
 function speak(text){
@@ -169,52 +207,51 @@ function speak(text){
 
     const utter = new SpeechSynthesisUtterance(text);
 
-    utter.lang = "ko-KR";
-
-    // 속도
-    utter.rate = parseFloat(
-        document.getElementById("speed").value
-    );
-
-    // 배우톤 느낌
-    utter.pitch = 0.9;
-
-    let voices = speechSynthesis.getVoices();
-    let type = document.getElementById("voiceType").value;
-
-    let voice;
-
-    if(type==="female"){
-        voice = voices.find(v =>
-            v.name.includes("Female") ||
-            v.name.includes("Siri")
-        );
-    }
-
-    if(type==="male"){
-        voice = voices.find(v =>
-            v.name.includes("Male")
-        );
-    }
-
-    if(!voice){
-        voice = voices.find(v =>
-            v.lang.includes("ko")
-        );
-    }
-
-    if(voice){
-        utter.voice = voice;
-    }
+    utter.lang="ko-KR";
+    utter.rate=parseFloat(document.getElementById("speed").value);
+    utter.pitch=0.9;
 
     speechSynthesis.speak(utter);
+
+    return estimateTime(text);
+}
+
+/* 읽는 시간 계산 */
+function estimateTime(text){
+    let chars = text.length;
+    return (chars * 0.12) + 2;
+}
+
+/* HP바 */
+function startHP(duration){
+
+    let bar = document.getElementById("hpBar");
+    let start = Date.now();
+
+    function update(){
+
+        let elapsed = (Date.now()-start)/1000;
+        let remain = Math.max(0, duration-elapsed);
+        let percent = (remain/duration)*100;
+
+        bar.style.width = percent+"%";
+
+        if(remain>0){
+            requestAnimationFrame(update);
+        }else{
+            if(autoMode){
+                nextLine();
+            }
+        }
+    }
+
+    update();
 }
 
 function startPractice(){
 
     parseScript();
-
-    myRole = document.getElementById("myRole").value.trim();
+    myRole=document.getElementById("myRole").value.trim();
 
     if(myRole===""){
         alert("역할 입력");
@@ -222,7 +259,7 @@ function startPractice(){
     }
 
     repeatCount++;
-    document.getElementById("counter").innerText =
+    document.getElementById("counter").innerText=
         repeatCount+"번 연습";
 
     index=-1;
@@ -233,132 +270,96 @@ function nextLine(){
 
     document.getElementById("myLine").style.display="none";
 
-    let nextMyLine="";
+    let foundOther=false;
 
-    while(true){
+    for(let i=0;i<lines.length*2;i++){
 
         index++;
+        if(index>=lines.length) index=0;
 
-        if(index>=lines.length){
-            index=0;
-        }
-
-        let line = lines[index];
-
+        let line=lines[index];
         if(!line.includes(":")) continue;
 
-        let role = line.split(":")[0].trim();
-        let text = line.split(":")[1].trim();
+        let role=line.split(":")[0].trim();
+        let text=line.split(":")[1].trim();
 
-        if(role===myRole){
-            nextMyLine=text;
+        if(role!==myRole && !foundOther){
+
+            document.getElementById("otherLine").innerText=text;
+
+            let time=speak(text);
+
+            if(autoMode){
+                startHP(time);
+            }
+
+            foundOther=true;
             continue;
         }
 
-        currentMyLine = nextMyLine;
-
-        document.getElementById("otherLine").innerText=text;
-
-        speak(text);
-
-        return;
+        if(foundOther && role===myRole){
+            currentMyLine=text;
+            return;
+        }
     }
 }
 
 function prevLine(){
-
-    document.getElementById("myLine").style.display="none";
-
-    let prevMyLine="";
-
-    while(true){
-
-        index--;
-
-        if(index<0){
-            index=lines.length-1;
-        }
-
-        let line = lines[index];
-
-        if(!line.includes(":")) continue;
-
-        let role = line.split(":")[0].trim();
-        let text = line.split(":")[1].trim();
-
-        if(role===myRole){
-            prevMyLine=text;
-            continue;
-        }
-
-        currentMyLine = prevMyLine;
-
-        document.getElementById("otherLine").innerText=text;
-
-        speak(text);
-
-        return;
-    }
+    index-=2;
+    if(index<0) index=0;
+    nextLine();
 }
 
 function showMyLine(){
 
-    if(currentMyLine==="") return;
-
     let box=document.getElementById("myLine");
 
-    box.innerText=currentMyLine;
+    box.innerText=currentMyLine || "(내 대사 없음)";
     box.style.display="block";
 }
 
-function saveScript(){
+function toggleAuto(){
 
+    autoMode=!autoMode;
+
+    if(!autoMode){
+        document.getElementById("hpBar").style.width="0%";
+    }
+}
+
+function saveScript(){
     localStorage.setItem("script",
         document.getElementById("scriptInput").value);
-
     localStorage.setItem("role",
         document.getElementById("myRole").value);
-
-    alert("저장됨");
 }
 
 function loadScript(){
-
-    document.getElementById("scriptInput").value =
-        localStorage.getItem("script") || "";
-
-    document.getElementById("myRole").value =
-        localStorage.getItem("role") || "";
+    document.getElementById("scriptInput").value=
+        localStorage.getItem("script")||"";
+    document.getElementById("myRole").value=
+        localStorage.getItem("role")||"";
 }
 
+/* 녹음 */
 async function startRecording(){
-
     let stream = await navigator.mediaDevices.getUserMedia({audio:true});
-
-    mediaRecorder = new MediaRecorder(stream);
-
+    mediaRecorder=new MediaRecorder(stream);
     audioChunks=[];
-
-    mediaRecorder.ondataavailable=e=>{
-        audioChunks.push(e.data);
-    }
-
+    mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
     mediaRecorder.onstop=()=>{
-        audioBlob=new Blob(audioChunks);
-        document.getElementById("player").src=
-            URL.createObjectURL(audioBlob);
+        let blob=new Blob(audioChunks);
+        player.src=URL.createObjectURL(blob);
     }
-
     mediaRecorder.start();
 }
 
 function stopRecording(){
-    if(mediaRecorder) mediaRecorder.stop();
+    mediaRecorder.stop();
 }
 
 function playRecording(){
-    let player=document.getElementById("player");
-    if(player.src) player.play();
+    player.play();
 }
 
 </script>
