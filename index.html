@@ -10,7 +10,7 @@ body{
     margin:0;
     background:#111;
     color:white;
-    font-family: 'Courier New', monospace;
+    font-family:Arial;
 }
 
 .container{
@@ -21,87 +21,66 @@ body{
 
 .banner{
     width:100%;
-    margin-bottom:20px;
-    border:2px solid #333;
-}
-
-.title{
-    text-align:center;
-    font-size:28px;
-    letter-spacing:4px;
-    margin-bottom:20px;
+    margin-bottom:15px;
 }
 
 .scriptBox{
-    background:#000;
-    border:2px solid #333;
-    padding:30px;
-    font-size:28px;
-    min-height:140px;
+    background:black;
+    border:1px solid #444;
+    padding:25px;
+    font-size:26px;
+    min-height:120px;
     text-align:center;
-    line-height:1.5;
 }
 
 .myLine{
     margin-top:10px;
     padding:20px;
-    border:1px dashed #777;
-    font-size:24px;
+    border:1px dashed #888;
     display:none;
-    color:#ccc;
-}
-
-.controls{
-    margin-top:20px;
+    font-size:22px;
 }
 
 button{
-    font-size:22px;
+    font-size:20px;
     padding:15px;
-    margin-top:10px;
+    margin-top:8px;
     width:100%;
-    background:#222;
+    background:#333;
     color:white;
-    border:1px solid #555;
+    border:none;
 }
 
 .bigBtn{
     font-size:28px;
-    padding:25px;
-    background:#e0b000;
+    background:#d0a000;
     color:black;
-    font-weight:bold;
 }
 
 textarea{
     width:100%;
     height:150px;
-    background:#000;
-    color:#ccc;
-    border:1px solid #444;
     margin-top:10px;
-    font-size:16px;
+    background:black;
+    color:white;
+    border:1px solid #555;
 }
 
-input{
+input, select{
     width:100%;
-    padding:15px;
-    background:#000;
+    padding:12px;
+    margin-top:8px;
+    background:black;
     color:white;
-    border:1px solid #444;
-    margin-top:10px;
-    font-size:18px;
+    border:1px solid #555;
 }
 
 .counter{
     text-align:center;
-    margin:15px 0;
-    font-size:20px;
-    color:#aaa;
+    margin:10px;
 }
 
 </style>
-
 </head>
 
 <body>
@@ -110,22 +89,19 @@ input{
 
 <img src="banner.png" class="banner">
 
-<div class="title">
-SCRIPT PRACTICE
-</div>
+<input id="myRole" placeholder="내 역할 이름">
 
-<input id="myRole" placeholder="내 역할 이름 입력">
+<select id="voiceType">
+<option value="auto">자동 음성</option>
+<option value="female">여자 음성</option>
+<option value="male">남자 음성</option>
+</select>
 
 <div class="counter" id="counter">
 0번 연습
 </div>
 
-<textarea id="scriptInput">
-종대: 니 왔나
-판수: 왔다
-종대: 늦었다
-판수: 미안하다
-</textarea>
+<textarea id="scriptInput"></textarea>
 
 <div class="scriptBox" id="otherLine">
 연습 시작
@@ -133,17 +109,22 @@ SCRIPT PRACTICE
 
 <div class="myLine" id="myLine"></div>
 
-<div class="controls">
-
 <button onclick="startPractice()">연습 시작</button>
-
 <button onclick="showMyLine()">내 대사 보기</button>
 
 <button class="bigBtn" onclick="prevLine()">◀ 이전</button>
-
 <button class="bigBtn" onclick="nextLine()">다음 ▶</button>
 
-</div>
+<button onclick="saveScript()">대본 저장</button>
+<button onclick="loadScript()">대본 불러오기</button>
+
+<hr>
+
+<button onclick="startRecording()">녹음 시작</button>
+<button onclick="stopRecording()">녹음 정지</button>
+<button onclick="playRecording()">녹음 재생</button>
+
+<audio id="player" controls style="width:100%;margin-top:10px;"></audio>
 
 </div>
 
@@ -151,9 +132,12 @@ SCRIPT PRACTICE
 
 let lines = [];
 let index = -1;
-let myLineText = "";
 let myRole = "";
+let myLineText = "";
 let repeatCount = 0;
+let mediaRecorder;
+let audioChunks = [];
+let audioBlob;
 
 function parseScript(){
     let text = document.getElementById("scriptInput").value;
@@ -166,9 +150,31 @@ function speak(text){
 
     const utter = new SpeechSynthesisUtterance(text);
 
+    utter.rate = 0.9;
+    utter.pitch = 1.0;
     utter.lang = "ko-KR";
-    utter.rate = 0.95;
-    utter.pitch = 0.9;
+
+    let voices = speechSynthesis.getVoices();
+    let type = document.getElementById("voiceType").value;
+
+    let selectedVoice;
+
+    if(type === "female"){
+        selectedVoice = voices.find(v => v.name.includes("Female"))
+        || voices.find(v => v.name.includes("Siri"));
+    }
+
+    if(type === "male"){
+        selectedVoice = voices.find(v => v.name.includes("Male"));
+    }
+
+    if(!selectedVoice){
+        selectedVoice = voices.find(v => v.lang.includes("ko"));
+    }
+
+    if(selectedVoice){
+        utter.voice = selectedVoice;
+    }
 
     speechSynthesis.speak(utter);
 }
@@ -180,12 +186,13 @@ function startPractice(){
     myRole = document.getElementById("myRole").value.trim();
 
     if(myRole === ""){
-        alert("역할 이름 입력");
+        alert("역할 입력");
         return;
     }
 
     repeatCount++;
-    document.getElementById("counter").innerText = repeatCount + "번 연습";
+    document.getElementById("counter").innerText =
+        repeatCount + "번 연습";
 
     index = -1;
 
@@ -211,21 +218,17 @@ function nextLine(){
         let role = line.split(":")[0].trim();
         let text = line.split(":")[1].trim();
 
-        if(role !== myRole){
-
-            document.getElementById("otherLine").innerText = text;
-
-            myLineText = "";
-            speak(text);
-
-            return;
-        }
-        else{
+        if(role === myRole){
             myLineText = text;
+            continue;
         }
 
-    }
+        document.getElementById("otherLine").innerText = text;
 
+        speak(text);
+
+        return;
+    }
 }
 
 function prevLine(){
@@ -247,29 +250,84 @@ function prevLine(){
         let role = line.split(":")[0].trim();
         let text = line.split(":")[1].trim();
 
-        if(role !== myRole){
-
-            document.getElementById("otherLine").innerText = text;
-
-            myLineText = "";
-            speak(text);
-
-            return;
-        }
-        else{
+        if(role === myRole){
             myLineText = text;
+            continue;
         }
 
-    }
+        document.getElementById("otherLine").innerText = text;
 
+        speak(text);
+
+        return;
+    }
 }
 
 function showMyLine(){
 
     if(myLineText === "") return;
 
-    document.getElementById("myLine").innerText = myLineText;
-    document.getElementById("myLine").style.display="block";
+    let box = document.getElementById("myLine");
+
+    box.innerText = myLineText;
+    box.style.display="block";
+}
+
+function saveScript(){
+
+    localStorage.setItem(
+        "script",
+        document.getElementById("scriptInput").value
+    );
+
+    alert("저장됨");
+}
+
+function loadScript(){
+
+    let saved = localStorage.getItem("script");
+
+    if(saved){
+        document.getElementById("scriptInput").value = saved;
+    }
+}
+
+async function startRecording(){
+
+    let stream = await navigator.mediaDevices.getUserMedia({audio:true});
+
+    mediaRecorder = new MediaRecorder(stream);
+
+    audioChunks = [];
+
+    mediaRecorder.ondataavailable = e=>{
+        audioChunks.push(e.data);
+    }
+
+    mediaRecorder.onstop = ()=>{
+        audioBlob = new Blob(audioChunks);
+        document.getElementById("player").src =
+            URL.createObjectURL(audioBlob);
+    }
+
+    mediaRecorder.start();
+}
+
+function stopRecording(){
+    mediaRecorder.stop();
+}
+
+function playRecording(){
+
+    let player = document.getElementById("player");
+
+    if(player.src){
+        player.play();
+    }
+}
+
+window.onload = function(){
+    loadScript();
 }
 
 </script>
