@@ -15,7 +15,7 @@ body{
 
 .banner{
     width:100%;
-    height:140px;
+    height:160px;
     background:url("banner.jpg") center/cover no-repeat;
 }
 
@@ -23,6 +23,13 @@ body{
     max-width:900px;
     margin:auto;
     padding:20px;
+}
+
+.section{
+    background:#2a2a2a;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:15px;
 }
 
 .scriptBox{
@@ -35,7 +42,7 @@ body{
 
 textarea{
     width:100%;
-    height:220px;
+    height:260px;
     font-size:16px;
     background:white;
     color:black;
@@ -64,15 +71,51 @@ textarea{
     background:gold;
 }
 
-.bigBtn{
-    background:gold;
-    color:black;
-    font-size:22px;
+.centerBox{
+    text-align:center;
+    margin:10px 0;
+}
+
+.grayBtn{
+    background:#777;
+    color:white;
+    font-size:20px;
     padding:12px 30px;
     border:none;
     border-radius:8px;
     margin:5px;
     cursor:pointer;
+}
+
+.yellowBtn{
+    background:gold;
+    color:black;
+    font-size:20px;
+    padding:12px 30px;
+    border:none;
+    border-radius:8px;
+    margin:5px;
+    cursor:pointer;
+}
+
+.autoOff{
+    background:red;
+    color:white;
+    font-size:20px;
+    padding:12px 30px;
+    border:none;
+    border-radius:8px;
+    margin:5px;
+}
+
+.autoOn{
+    background:green;
+    color:white;
+    font-size:20px;
+    padding:12px 30px;
+    border:none;
+    border-radius:8px;
+    margin:5px;
 }
 
 .row{
@@ -94,12 +137,26 @@ textarea{
 
 <div class="container">
 
-<div class="scriptBox">
+<div class="section">
 
 역할:
 <input id="roleInput" placeholder="예: 종대">
 
 <br><br>
+
+음성:
+<select id="voiceSelect">
+<option value="female">여자</option>
+<option value="male">남자</option>
+</select>
+
+속도:
+<input type="range" min="0" max="5" step="0.1" value="2.5" id="speed">
+<span id="speedVal">2.5</span>
+
+</div>
+
+<div class="scriptBox">
 
 대본:
 <textarea id="scriptInput">
@@ -119,34 +176,26 @@ textarea{
 <div class="gaugeBar" id="gaugeBar"></div>
 </div>
 
-<br>
-
-<button class="bigBtn" onclick="startPractice()">연습 시작</button>
-
-<button class="bigBtn" onclick="showMyLine()">내 대사 보기</button>
-
-<div class="row">
-<button class="bigBtn" onclick="prevLine()">이전</button>
-<button class="bigBtn" onclick="nextLine()">다음</button>
+<div class="centerBox">
+<button class="grayBtn" onclick="startPractice()">연습 시작</button>
 </div>
 
-<button class="bigBtn" onclick="toggleAuto()" id="autoBtn">
+<div class="centerBox">
+<button class="grayBtn" onclick="showMyLine()">내 대사 보기</button>
+</div>
+
+<div class="row">
+<button class="yellowBtn" onclick="prevLine()">이전</button>
+<button class="yellowBtn" onclick="nextLine()">다음</button>
+</div>
+
+<div class="centerBox">
+<button id="autoBtn" class="autoOff" onclick="toggleAuto()">
 자동연습 OFF
 </button>
+</div>
 
-<br><br>
-
-음성:
-<select id="voiceSelect">
-<option value="female">여자</option>
-<option value="male">남자</option>
-</select>
-
-속도:
-<input type="range" min="0.1" max="2" step="0.1" value="1" id="speed">
-<span id="speedVal">1.0</span>
-
-<br><br>
+<br>
 
 <button class="small" onclick="saveScript()">💾 저장</button>
 <button class="small" onclick="loadScript()">📂 불러오기</button>
@@ -183,20 +232,30 @@ function parseScript(){
     });
 }
 
+function getKoreanVoice(type){
+
+    let voices=synth.getVoices();
+
+    let koreanVoices=voices.filter(v=>v.lang.includes("ko"));
+
+    if(koreanVoices.length===0) return voices[0];
+
+    if(type==="male"){
+        return koreanVoices[0];
+    }else{
+        return koreanVoices[1] || koreanVoices[0];
+    }
+}
+
 function speak(text,callback){
 
     let utter=new SpeechSynthesisUtterance(text);
 
-    let voices=synth.getVoices();
     let type=document.getElementById("voiceSelect").value;
 
-    if(type==="male"){
-        utter.voice=voices.find(v=>v.name.toLowerCase().includes("male"))||voices[0];
-    }else{
-        utter.voice=voices.find(v=>v.name.toLowerCase().includes("female"))||voices[1];
-    }
+    utter.voice=getKoreanVoice(type);
 
-    utter.rate=parseFloat(document.getElementById("speed").value);
+    utter.rate=parseFloat(document.getElementById("speed").value)/2.5;
 
     utter.onend=callback;
 
@@ -249,12 +308,15 @@ function toggleAuto(){
 
     autoMode=!autoMode;
 
-    document.getElementById("autoBtn").innerText=
-        autoMode?"자동연습 ON":"자동연습 OFF";
+    let btn=document.getElementById("autoBtn");
 
     if(autoMode){
+        btn.className="autoOn";
+        btn.innerText="자동연습 ON";
         startPractice();
     }else{
+        btn.className="autoOff";
+        btn.innerText="자동연습 OFF";
         stopAuto();
     }
 }
