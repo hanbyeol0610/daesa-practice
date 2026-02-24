@@ -306,6 +306,7 @@ if(autoMode && !paused) autoNext();
 }
 
 }
+
 function nextLine(){
 
 parseScript();
@@ -328,16 +329,6 @@ if(index<0) index=lines.length-1;
 }while(lines[index].role===role);
 
 showLine();
-}
-
-function showMyLine(){
-
-if(currentMyLine==="") return;
-
-let box=document.getElementById("myLine");
-
-box.innerText=currentMyLine;
-box.style.display="block";
 }
 
 function startPractice(){
