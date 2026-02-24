@@ -305,8 +305,16 @@ if(autoMode && !paused) autoNext();
 });
 }
 
-}
+function showMyLine() {
 
+    for(let i = currentIndex + 1; i < script.length; i++) {
+        if(script[i].role === myRole){
+            document.getElementById("myDisplay").innerText =
+                myRole + ": " + script[i].line;
+            return;
+        }
+    }
+}
 function nextLine(){
 
 parseScript();
