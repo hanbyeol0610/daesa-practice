@@ -247,14 +247,18 @@ font-size:14px;
 let lines=[];
 let index=0;
 let role="";
+
 let autoMode=false;
 let paused=false;
 
-let gaugeTimer=null;
 let autoTimer=null;
+let gaugeTimer=null;
 
+let totalDuration=0;
 let remainingTime=0;
-let startTime=0;
+
+let gaugeStartPercent=100;
+let pausedPercent=100;
 
 const synth=window.speechSynthesis;
 
