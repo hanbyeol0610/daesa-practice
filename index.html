@@ -343,13 +343,29 @@ if(autoMode)autoNext();
 }
 
 function nextLine(){
+
+parseScript();
+
+do{
 index++;
+if(index>=lines.length) index=0;
+}while(lines[index].role===role);
+
 showLine();
+
 }
 
 function prevLine(){
+
+parseScript();
+
+do{
 index--;
+if(index<0) index=lines.length-1;
+}while(lines[index].role===role);
+
 showLine();
+
 }
 
 function showMyLine(){
