@@ -237,6 +237,11 @@ let timer=null;
 
 const synth=window.speechSynthesis;
 
+// 음성 로딩 보장
+speechSynthesis.onvoiceschanged = function(){
+speechSynthesis.getVoices();
+};
+
 function parseScript(){
 
 role=document.getElementById("roleInput").value.trim();
@@ -263,9 +268,22 @@ let koVoices=voices.filter(v=>v.lang.includes("ko"));
 if(koVoices.length===0) return voices[0];
 
 if(gender==="male"){
-return koVoices[0];
+
+// 남자 목소리 우선 선택
+let maleVoice = koVoices.find(v =>
+v.name.toLowerCase().includes("male") ||
+v.name.includes("Microsoft") ||
+v.name.includes("Google") ||
+v.name.includes("Korean Male")
+);
+
+return maleVoice || koVoices[0];
+
 }else{
+
+// 여자 목소리 기존 유지
 return koVoices[1] || koVoices[0];
+
 }
 
 }
@@ -279,6 +297,7 @@ utter.rate=parseFloat(document.getElementById("speed").value)/2.5;
 utter.lang="ko-KR";
 utter.onend=callback;
 
+synth.cancel();
 synth.speak(utter);
 
 }
