@@ -13,22 +13,28 @@ color:white;
 font-family:Arial;
 }
 
-.container{
-max-width:900px;
-margin:auto;
-padding:20px;
-}
-
+/* 배너 */
 .banner{
 width:100%;
 height:160px;
+background:#000;
+display:flex;
+justify-content:center;
+align-items:center;
 overflow:hidden;
 }
 
 .banner img{
 width:100%;
-height:100%;
+height:160px;
 object-fit:cover;
+}
+
+/* 컨테이너 */
+.container{
+max-width:900px;
+margin:auto;
+padding:20px;
 }
 
 .section{
@@ -54,6 +60,7 @@ background:white;
 color:black;
 }
 
+/* 대사 표시 */
 .display{
 background:#111;
 padding:20px;
@@ -63,6 +70,7 @@ margin-bottom:10px;
 font-size:20px;
 }
 
+/* 게이지 */
 .gauge{
 height:14px;
 background:#333;
@@ -77,6 +85,7 @@ width:100%;
 background:gold;
 }
 
+/* 버튼 */
 .fullBtn{
 width:100%;
 background:#777;
@@ -137,7 +146,7 @@ font-size:14px;
 
 <body>
 
-<!-- 배너 -->
+<!-- ✅ 배너 (상단 고정) -->
 <div class="banner">
 <img src="banner.png">
 </div>
