@@ -21,11 +21,13 @@ margin:0 auto 20px auto;
 background:#000;
 border-radius:10px;
 overflow:hidden;
+height:140px; /* ← 높이 절반으로 축소 */
 }
 
 .banner img{
 width:100%;
-height:auto;
+height:100%;
+object-fit:cover;
 display:block;
 }
 
@@ -95,6 +97,19 @@ border:none;
 border-radius:8px;
 cursor:pointer;
 margin-bottom:10px;
+}
+
+.pauseBtn{
+width:100%;
+background:#c0392b;
+color:white;
+font-size:22px;
+padding:15px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+margin-bottom:10px;
+display:none;
 }
 
 .row{
@@ -178,8 +193,6 @@ font-size:14px;
 대번: 아무것도 안했는데요
 종대: 거짓말하지 마라
 대번: 진짜라니까요
-
-<위 방식 대로 대사를 붙여 넣으세요>
 </textarea>
 
 </div>
@@ -194,6 +207,11 @@ font-size:14px;
 
 <button class="fullBtn" onclick="startPractice()">
 연습 시작
+</button>
+
+<!-- ✅ 일시정지 버튼 -->
+<button id="pauseBtn" class="pauseBtn" onclick="pauseAuto()">
+⏸ 일시정지
 </button>
 
 <button class="fullBtn" onclick="showMyLine()">
@@ -238,7 +256,6 @@ let timer=null;
 
 const synth=window.speechSynthesis;
 
-// 음성 로딩 보장
 speechSynthesis.onvoiceschanged = function(){
 speechSynthesis.getVoices();
 };
@@ -259,18 +276,11 @@ text:p[1]?.trim()
 
 }
 
-// 자연스러운 한국어 음성 선택
 function getVoice(){
 
 let voices = synth.getVoices();
-
 let koVoices = voices.filter(v => v.lang.includes("ko"));
 
-if(koVoices.length === 0){
-return voices[0];
-}
-
-// Google / Microsoft 우선
 let naturalVoice = koVoices.find(v =>
 v.name.includes("Google") ||
 v.name.includes("Microsoft") ||
@@ -281,7 +291,6 @@ return naturalVoice || koVoices[0];
 
 }
 
-// 배우톤 음성
 function speak(text,callback){
 
 let utter = new SpeechSynthesisUtterance(text);
@@ -290,15 +299,12 @@ let gender = document.getElementById("voiceSelect").value;
 
 utter.voice = getVoice();
 utter.lang = "ko-KR";
-
-// 속도
 utter.rate = parseFloat(document.getElementById("speed").value)/2.5;
 
-// 배우톤 설정
 if(gender === "male"){
-utter.pitch = 0.5;  // 낮은톤
+utter.pitch = 0.5;
 }else{
-utter.pitch = 1.3;  // 높은톤
+utter.pitch = 1.3;
 }
 
 utter.volume = 1;
@@ -370,11 +376,15 @@ function toggleAuto(){
 autoMode=!autoMode;
 
 let btn=document.getElementById("autoBtn");
+let pauseBtn=document.getElementById("pauseBtn");
 
 if(autoMode){
 
 btn.className="autoOn";
 btn.innerText="자동연습 ON";
+
+pauseBtn.style.display="block"; // ← 버튼 표시
+
 startPractice();
 
 }else{
@@ -385,12 +395,25 @@ stopAuto();
 
 }
 
+function pauseAuto(){
+
+autoMode=false;
+
+synth.cancel();
+clearTimeout(timer);
+
+document.getElementById("display").innerText="⏸ 일시정지";
+
+}
+
 function stopAuto(){
 
 autoMode=false;
 
 document.getElementById("autoBtn").className="autoOff";
 document.getElementById("autoBtn").innerText="자동연습 OFF";
+
+document.getElementById("pauseBtn").style.display="none";
 
 synth.cancel();
 
@@ -415,11 +438,11 @@ let line=lines[index];
 
 if(line.role===role){
 
-let duration=(line.text.length*80)+2000;
+let duration=(line.text.length*80)+6000; // ← +6초 변경
 
 startGauge(duration);
 
-setTimeout(()=>{
+timer=setTimeout(()=>{
 autoNext();
 },duration);
 
