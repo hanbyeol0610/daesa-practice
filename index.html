@@ -1,7 +1,4 @@
 <!DOCTYPE html>
-<div class="banner">
-<img src="./banner.png" style="width:100%;height:160px;object-fit:cover;">
-</div>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -20,6 +17,18 @@ font-family:Arial;
 max-width:900px;
 margin:auto;
 padding:20px;
+}
+
+.banner{
+width:100%;
+height:160px;
+overflow:hidden;
+}
+
+.banner img{
+width:100%;
+height:100%;
+object-fit:cover;
 }
 
 .section{
@@ -68,32 +77,28 @@ width:100%;
 background:gold;
 }
 
-.center{
-text-align:center;
-margin:10px 0;
+.fullBtn{
+width:100%;
+background:#777;
+color:white;
+font-size:26px;
+padding:18px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+margin-bottom:10px;
 }
 
 .row{
 display:flex;
-justify-content:space-between;
 gap:10px;
-}
-
-.grayBtn{
-background:#777;
-color:white;
-font-size:26px;
-padding:15px 40px;
-border:none;
-border-radius:8px;
-cursor:pointer;
 }
 
 .yellowBtn{
 background:gold;
 color:black;
 font-size:20px;
-padding:12px 30px;
+padding:15px;
 border:none;
 border-radius:8px;
 cursor:pointer;
@@ -104,7 +109,7 @@ flex:1;
 background:red;
 color:white;
 font-size:20px;
-padding:12px 30px;
+padding:15px;
 border:none;
 border-radius:8px;
 cursor:pointer;
@@ -115,7 +120,7 @@ flex:1;
 background:green;
 color:white;
 font-size:20px;
-padding:12px 30px;
+padding:15px;
 border:none;
 border-radius:8px;
 cursor:pointer;
@@ -127,20 +132,15 @@ padding:6px 10px;
 font-size:14px;
 }
 
-.bannerImg{
-width:100%;
-height:160px;
-object-fit:cover;
-display:block;
-}
-
 </style>
 </head>
 
 <body>
 
 <!-- 배너 -->
-<img src="banner.png" class="bannerImg">
+<div class="banner">
+<img src="banner.png">
+</div>
 
 <div class="container">
 
@@ -184,11 +184,14 @@ display:block;
 </div>
 
 <!-- 연습 시작 -->
-<div class="center">
-<button class="grayBtn" onclick="startPractice()">
+<button class="fullBtn" onclick="startPractice()">
 연습 시작
 </button>
-</div>
+
+<!-- 내 대사 -->
+<button class="fullBtn" onclick="showMyLine()">
+내 대사 보기
+</button>
 
 <!-- 이전 자동 다음 -->
 <div class="row">
@@ -205,14 +208,6 @@ display:block;
 다음
 </button>
 
-</div>
-
-<br>
-
-<div class="center">
-<button class="grayBtn" onclick="showMyLine()">
-내 대사 보기
-</button>
 </div>
 
 <br>
@@ -264,22 +259,10 @@ let koVoices=voices.filter(v=>v.lang.includes("ko"));
 if(koVoices.length===0) return voices[0];
 
 if(gender==="male"){
-let male=koVoices.find(v =>
-v.name.toLowerCase().includes("male") ||
-v.name.includes("남")
-);
-return male || koVoices[0];
-}
-
-if(gender==="female"){
-let female=koVoices.find(v =>
-v.name.toLowerCase().includes("female") ||
-v.name.includes("여")
-);
-return female || koVoices[0];
-}
-
 return koVoices[0];
+}else{
+return koVoices[1] || koVoices[0];
+}
 
 }
 
