@@ -8,8 +8,8 @@
 
 body{
     margin:0;
-    background:#6B8CFF;
-    font-family: sans-serif;
+    background:#79c763;
+    font-family:sans-serif;
     text-align:center;
 }
 
@@ -21,33 +21,62 @@ body{
 
 .banner{
     width:100%;
-    border-radius:10px;
+    border:4px solid black;
     margin-bottom:10px;
 }
 
-.script{
+.scriptBox{
     background:white;
     padding:20px;
-    border-radius:10px;
+    border:4px solid black;
+    font-size:24px;
+    min-height:120px;
+}
+
+.myLine{
+    margin-top:10px;
+    background:#fff3a0;
+    padding:15px;
+    border:3px dashed black;
     font-size:22px;
-    min-height:100px;
+    display:none;
+}
+
+.controls{
+    margin-top:10px;
 }
 
 button{
     font-size:20px;
     padding:15px;
-    margin-top:10px;
+    margin-top:5px;
     width:100%;
-    border:none;
-    border-radius:10px;
-    background:#FFD93D;
+    border:3px solid black;
+    background:#ffd800;
 }
 
 textarea{
     width:100%;
-    height:120px;
+    height:140px;
     font-size:16px;
     margin-top:10px;
+    border:3px solid black;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    font-size:18px;
+    border:3px solid black;
+    margin-top:5px;
+}
+
+.counter{
+    font-size:22px;
+    margin:10px;
+    background:white;
+    border:3px solid black;
+    padding:10px;
 }
 
 </style>
@@ -60,18 +89,35 @@ textarea{
 
 <img src="banner.png" class="banner">
 
-<textarea id="scriptInput">종대: 니 왔나
-대번: 왔다
-종대: 늦었다
-대번: 미안하다</textarea>
+<input id="myRole" placeholder="내 역할 이름 입력 (예: 판수)">
 
-<div class="script" id="output">
-연습 시작을 누르세요
+<div class="counter" id="counter">
+0번 연습!
 </div>
 
+<textarea id="scriptInput">
+종대: 니 왔나
+판수: 왔다
+종대: 늦었다
+판수: 미안하다
+</textarea>
+
+<div class="scriptBox" id="otherLine">
+연습 시작 누르세요
+</div>
+
+<div class="myLine" id="myLine">
+내 대사
+</div>
+
+<div class="controls">
+
 <button onclick="startPractice()">연습 시작</button>
+<button onclick="showMyLine()">내 대사 보기</button>
 <button onclick="nextLine()">다음</button>
 <button onclick="prevLine()">이전</button>
+
+</div>
 
 </div>
 
@@ -79,6 +125,9 @@ textarea{
 
 let lines = [];
 let index = -1;
+let myLineText = "";
+let myRole = "";
+let repeatCount = 0;
 
 function parseScript(){
     let text = document.getElementById("scriptInput").value;
@@ -93,51 +142,92 @@ function speak(text){
 
     utter.lang = "ko-KR";
     utter.rate = 0.95;
-    utter.pitch = 1.05;
+    utter.pitch = 1.0;
 
     const voices = speechSynthesis.getVoices();
+    let voice = voices.find(v => v.lang.includes("ko"));
 
-    let bestVoice = voices.find(v =>
-        v.lang.includes("ko")
-    );
-
-    if(bestVoice){
-        utter.voice = bestVoice;
+    if(voice){
+        utter.voice = voice;
     }
 
     speechSynthesis.speak(utter);
 }
 
 function startPractice(){
+
     parseScript();
+    myRole = document.getElementById("myRole").value.trim();
+
+    if(myRole === ""){
+        alert("내 역할 이름을 입력하세요");
+        return;
+    }
+
+    repeatCount++;
+    document.getElementById("counter").innerText = repeatCount + "번 연습!";
+
     index = -1;
     nextLine();
 }
 
 function nextLine(){
 
+    document.getElementById("myLine").style.display="none";
+
     index++;
 
-    if(index >= lines.length) return;
+    if(index >= lines.length){
+        index = 0;
+    }
 
-    let line = lines[index];
-
-    document.getElementById("output").innerText = line;
-
-    speak(line);
+    processLine();
 }
 
 function prevLine(){
 
+    document.getElementById("myLine").style.display="none";
+
     index--;
 
-    if(index < 0) index = 0;
+    if(index < 0){
+        index = lines.length - 1;
+    }
+
+    processLine();
+}
+
+function processLine(){
 
     let line = lines[index];
 
-    document.getElementById("output").innerText = line;
+    if(!line.includes(":")) return;
 
-    speak(line);
+    let role = line.split(":")[0].trim();
+    let text = line.split(":")[1].trim();
+
+    if(role === myRole){
+
+        myLineText = text;
+        document.getElementById("otherLine").innerText = "(내 대사 차례)";
+
+    }
+    else{
+
+        document.getElementById("otherLine").innerText = text;
+        speak(text);
+
+        myLineText = "";
+
+    }
+}
+
+function showMyLine(){
+
+    if(myLineText === "") return;
+
+    document.getElementById("myLine").innerText = myLineText;
+    document.getElementById("myLine").style.display="block";
 }
 
 </script>
