@@ -2,108 +2,139 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>대사 연습</title>
+<title>대본 연습</title>
 
 <style>
 
-body {
-  font-family: sans-serif;
-  background: #f5f5f5;
-  margin: 0;
-  padding: 0;
-  text-align: center;
+body{
+margin:0;
+background:#1a1a1a;
+color:white;
+font-family:Arial;
 }
 
 /* 배너 */
-.banner img {
-  width: 100%;
-  height: 160px;
-  object-fit: contain;
+.banner{
+width:100%;
+height:160px;
+overflow:hidden;
 }
 
-/* 입력칸 */
-textarea {
-  width: 90%;
-  height: 200px;
-  margin: 10px;
-  font-size: 16px;
+.banner img{
+width:100%;
+height:160px;
+object-fit:cover;
 }
 
-/* 역할 입력 */
-input {
-  font-size: 18px;
-  padding: 10px;
-  width: 200px;
-  margin: 10px;
+/* 컨테이너 */
+.container{
+max-width:900px;
+margin:auto;
+padding:20px;
 }
 
-/* 버튼 기본 */
-button {
-  padding: 15px;
-  font-size: 18px;
-  margin: 5px;
-  border: none;
-  background: #ccc;
-  cursor: pointer;
+.section{
+background:#2a2a2a;
+padding:15px;
+border-radius:10px;
+margin-bottom:15px;
 }
 
-/* 연습시작 */
-.startBtn {
-  width: 90%;
-  font-size: 24px;
+.scriptBox{
+background:#f5f5f5;
+color:black;
+padding:20px;
+border-radius:10px;
+margin-bottom:15px;
 }
 
-/* 내대사보기 */
-.myBtn {
-  width: 90%;
+textarea{
+width:100%;
+height:260px;
+font-size:16px;
+background:white;
+color:black;
 }
 
-/* 이전 다음 줄 */
-.controlRow {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-.controlRow button {
-  flex: 1;
-  max-width: 200px;
-}
-
-/* 자동연습 */
-.autoOn {
-  background: green;
-  color: white;
-}
-
-.autoOff {
-  background: red;
-  color: white;
-}
-
-/* 대사 출력 */
-#dialogueBox {
-  border: 1px solid black;
-  margin: 20px;
-  padding: 20px;
-  min-height: 100px;
-  background: white;
+/* 대사 표시 */
+.display{
+background:#111;
+padding:20px;
+border-radius:10px;
+min-height:70px;
+margin-bottom:10px;
+font-size:20px;
 }
 
 /* 게이지 */
-#gageContainer {
-  width: 90%;
-  height: 20px;
-  border: 1px solid black;
-  margin: auto;
+.gauge{
+height:14px;
+background:#333;
+margin-top:10px;
+border-radius:6px;
+overflow:hidden;
 }
 
-#gageBar {
-  height: 100%;
-  width: 100%;
-  background: gold;
+.gaugeBar{
+height:100%;
+width:100%;
+background:gold;
+}
+
+/* 버튼 */
+.fullBtn{
+width:100%;
+background:#777;
+color:white;
+font-size:26px;
+padding:18px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+margin-bottom:10px;
+}
+
+.row{
+display:flex;
+gap:10px;
+}
+
+.yellowBtn{
+background:gold;
+color:black;
+font-size:20px;
+padding:15px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+flex:1;
+}
+
+.autoOff{
+background:red;
+color:white;
+font-size:20px;
+padding:15px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+flex:1;
+}
+
+.autoOn{
+background:green;
+color:white;
+font-size:20px;
+padding:15px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+flex:1;
+}
+
+.small{
+padding:6px 10px;
+font-size:14px;
 }
 
 </style>
@@ -116,259 +147,304 @@ button {
 <img src="banner.png">
 </div>
 
-<br>
+<div class="container">
 
-<!-- 역할 -->
-<div>
-내 역할:
-<input id="myRole" placeholder="예: 종대">
-</div>
+<div class="section">
 
-<!-- 음성 -->
-<div>
+역할:
+<input id="roleInput" placeholder="예: 종대">
+
+<br><br>
+
 음성:
-<select id="gender">
+<select id="voiceSelect">
 <option value="male" selected>남자</option>
 <option value="female">여자</option>
 </select>
 
 속도:
-<input type="range" id="speed" min="0" max="5" step="0.1" value="2.5">
+<input type="range" min="0" max="5" step="0.1" value="2.5" id="speed">
+<span id="speedVal">2.5</span>
+
 </div>
 
-<br>
+<div class="scriptBox">
 
-<!-- 대본 -->
-<textarea id="script" placeholder=
-"종대: 니 지금 뭐하는기고
-영수: 아무것도 안했다
-종대: 거짓말 하지마라">
+대본:
+<textarea id="scriptInput">
+종대: 니 지금 뭐하노
+대번: 아무것도 안했는데요
+종대: 거짓말하지 마라
+대번: 진짜라니까요
 </textarea>
 
-<br>
+</div>
 
-<!-- 연습 시작 -->
-<button class="startBtn" onclick="startPractice()">
+<div class="display" id="display">
+&lt;상대 대사&gt;
+</div>
+
+<div class="gauge">
+<div class="gaugeBar" id="gaugeBar"></div>
+</div>
+
+<button class="fullBtn" onclick="startPractice()">
 연습 시작
 </button>
 
-<br>
-
-<!-- 내 대사 -->
-<button class="myBtn" onclick="showMyLine()">
+<button class="fullBtn" onclick="showMyLine()">
 내 대사 보기
 </button>
 
-<br>
+<div class="row">
 
-<!-- 이전 다음 -->
-<div class="controlRow">
-<button onclick="prevLine()">이전</button>
+<button class="yellowBtn" onclick="prevLine()">
+이전
+</button>
 
 <button id="autoBtn" class="autoOff" onclick="toggleAuto()">
 자동연습 OFF
 </button>
 
-<button onclick="nextLine()">다음</button>
+<button class="yellowBtn" onclick="nextLine()">
+다음
+</button>
+
 </div>
 
-<!-- 대사 -->
-<div id="dialogueBox">
-&lt;상대 대사&gt;
-</div>
+<br>
 
-<!-- 게이지 -->
-<div id="gageContainer">
-<div id="gageBar"></div>
+<button class="small" onclick="saveScript()">💾 저장</button>
+<button class="small" onclick="loadScript()">📂 불러오기</button>
+
+<br><br>
+
+연습횟수:
+<span id="count">0</span>
+
 </div>
 
 <script>
 
-let lines = [];
-let index = 0;
-let autoMode = false;
-let timer;
+let lines=[];
+let index=0;
+let role="";
+let autoMode=false;
+let timer=null;
 
-let voices = [];
+const synth=window.speechSynthesis;
 
-/* 음성 로딩 */
-speechSynthesis.onvoiceschanged = function() {
-  voices = speechSynthesis.getVoices();
+function parseScript(){
+
+role=document.getElementById("roleInput").value.trim();
+
+lines=document.getElementById("scriptInput").value
+.split("\n")
+.map(l=>{
+let p=l.split(":");
+return {
+role:p[0]?.trim(),
+text:p[1]?.trim()
 };
+});
 
-/* 남자 여자 음성 */
-function getKoreanVoice(gender) {
-
-  let ko = voices.filter(v => v.lang.includes("ko"));
-
-  if (gender === "male") {
-    return ko.find(v =>
-      v.name.includes("Male") ||
-      v.name.includes("male") ||
-      v.name.includes("Google 한국의 남성")
-    ) || ko[0];
-  } else {
-    return ko.find(v =>
-      v.name.includes("Female") ||
-      v.name.includes("female")
-    ) || ko[0];
-  }
 }
 
-/* 말하기 */
-function speak(text) {
+function getVoice(){
 
-  speechSynthesis.cancel();
+let voices=synth.getVoices();
+let gender=document.getElementById("voiceSelect").value;
 
-  let utter = new SpeechSynthesisUtterance(text);
+let koVoices=voices.filter(v=>v.lang.includes("ko"));
 
-  let gender = document.getElementById("gender").value;
-  let voice = getKoreanVoice(gender);
+if(koVoices.length===0) return voices[0];
 
-  if (voice) utter.voice = voice;
-
-  let speed = document.getElementById("speed").value;
-  utter.rate = speed / 2.5;
-
-  speechSynthesis.speak(utter);
+if(gender==="male"){
+return koVoices[0];
+}else{
+return koVoices[1] || koVoices[0];
 }
 
-/* 시작 */
-function startPractice() {
-
-  let script = document.getElementById("script").value;
-  lines = script.split("\n");
-
-  index = 0;
-
-  showLine();
 }
 
-/* 줄 표시 */
-function showLine() {
+function speak(text,callback){
 
-  if (index < 0 || index >= lines.length) return;
+let utter=new SpeechSynthesisUtterance(text);
 
-  let myRole = document.getElementById("myRole").value;
+utter.voice=getVoice();
+utter.rate=parseFloat(document.getElementById("speed").value)/2.5;
+utter.lang="ko-KR";
+utter.onend=callback;
 
-  let line = lines[index];
-  let parts = line.split(":");
+synth.speak(utter);
 
-  let role = parts[0];
-  let text = parts[1];
-
-  if (role !== myRole) {
-    document.getElementById("dialogueBox").innerText = text;
-    speak(text);
-
-    if (autoMode) autoNext(text);
-  } else {
-    document.getElementById("dialogueBox").innerText = "(내 차례)";
-
-    if (autoMode) autoNext(text);
-  }
 }
 
-/* 자동 */
-function autoNext(text) {
+function showLine(){
 
-  let time = text.length * 200 + 2000;
+if(index<0)index=0;
+if(index>=lines.length)index=0;
 
-  startGage(time);
+let line=lines[index];
 
-  clearTimeout(timer);
+if(line.role===role){
 
-  timer = setTimeout(() => {
+document.getElementById("display").innerText="<내 차례>";
 
-    index++;
-
-    if (index >= lines.length) {
-      toggleAutoOff();
-      return;
-    }
-
-    showLine();
-
-  }, time);
+if(autoMode){
+autoNext();
 }
 
-/* 게이지 */
-function startGage(time) {
+}else{
 
-  let bar = document.getElementById("gageBar");
+document.getElementById("display").innerText=line.text;
 
-  bar.style.width = "100%";
+speak(line.text,()=>{
+if(autoMode)autoNext();
+});
 
-  let start = Date.now();
-
-  let g = setInterval(() => {
-
-    let now = Date.now();
-    let diff = now - start;
-
-    let percent = 100 - (diff/time)*100;
-
-    bar.style.width = percent + "%";
-
-    if (percent <= 0) clearInterval(g);
-
-  }, 50);
 }
 
-/* 다음 */
-function nextLine() {
-  index++;
-  showLine();
 }
 
-/* 이전 */
-function prevLine() {
-  index--;
-  showLine();
+function nextLine(){
+index++;
+showLine();
 }
 
-/* 내 대사 */
-function showMyLine() {
-
-  let myRole = document.getElementById("myRole").value;
-
-  let line = lines[index];
-  let parts = line.split(":");
-
-  if (parts[0] === myRole) {
-    document.getElementById("dialogueBox").innerText = parts[1];
-  }
+function prevLine(){
+index--;
+showLine();
 }
 
-/* 자동 ON OFF */
-function toggleAuto() {
+function showMyLine(){
 
-  autoMode = !autoMode;
+let line=lines[index];
 
-  let btn = document.getElementById("autoBtn");
-
-  if (autoMode) {
-    btn.innerText = "자동연습 ON";
-    btn.className = "autoOn";
-
-    startPractice();
-  } else {
-    toggleAutoOff();
-  }
+if(line.role===role){
+document.getElementById("display").innerText=line.text;
 }
 
-function toggleAutoOff() {
+}
 
-  autoMode = false;
+function startPractice(){
 
-  let btn = document.getElementById("autoBtn");
+parseScript();
+index=0;
+showLine();
 
-  btn.innerText = "자동연습 OFF";
-  btn.className = "autoOff";
+}
 
-  clearTimeout(timer);
+function toggleAuto(){
 
-  document.getElementById("gageBar").style.width = "100%";
+autoMode=!autoMode;
+
+let btn=document.getElementById("autoBtn");
+
+if(autoMode){
+
+btn.className="autoOn";
+btn.innerText="자동연습 ON";
+startPractice();
+
+}else{
+
+stopAuto();
+
+}
+
+}
+
+function stopAuto(){
+
+autoMode=false;
+
+document.getElementById("autoBtn").className="autoOff";
+document.getElementById("autoBtn").innerText="자동연습 OFF";
+
+synth.cancel();
+
+document.getElementById("display").innerText="<상대 대사>";
+
+document.getElementById("gaugeBar").style.width="100%";
+
+}
+
+function autoNext(){
+
+if(!autoMode)return;
+
+index++;
+
+if(index>=lines.length){
+stopAuto();
+return;
+}
+
+let line=lines[index];
+
+if(line.role===role){
+
+let duration=(line.text.length*80)+2000;
+
+startGauge(duration);
+
+setTimeout(()=>{
+autoNext();
+},duration);
+
+}else{
+
+showLine();
+
+}
+
+}
+
+function startGauge(duration){
+
+let bar=document.getElementById("gaugeBar");
+let start=Date.now();
+
+timer=setInterval(()=>{
+
+let p=100-((Date.now()-start)/duration)*100;
+bar.style.width=p+"%";
+
+if(p<=0){
+clearInterval(timer);
+}
+
+},50);
+
+}
+
+function saveScript(){
+
+localStorage.setItem("script",
+document.getElementById("scriptInput").value);
+
+localStorage.setItem("role",
+document.getElementById("roleInput").value);
+
+alert("저장됨");
+
+}
+
+function loadScript(){
+
+document.getElementById("scriptInput").value=
+localStorage.getItem("script")||"";
+
+document.getElementById("roleInput").value=
+localStorage.getItem("role")||"";
+
+alert("불러옴");
+
+}
+
+document.getElementById("speed").oninput=function(){
+document.getElementById("speedVal").innerText=this.value;
 }
 
 </script>
