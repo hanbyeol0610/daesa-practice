@@ -197,7 +197,69 @@ font-size:14px;
 한별: 아무것도 안했는데요
 종대: 거짓말하지 마라
 한별: 거짓말?! 나보다 어려 보이는 고만..확!
-  *예시처럼 대본을 붙여넣기 해주세요
+  *예시처럼 대본을 작성autoOff{
+background:red;
+color:white;
+font-size:20px;
+padding:15px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+flex:1;
+}
+
+.autoOn{
+background:green;
+color:white;
+font-size:20px;
+padding:15px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+flex:1;
+}
+
+.small{
+padding:6px 10px;
+font-size:14px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="banner">
+<img src="banner.png">
+</div>
+
+<div class="container">
+
+<div class="section">
+역할:
+<input id="roleInput" placeholder="예: 종대">
+
+<br><br>
+
+음성:
+<select id="voiceSelect">
+<option value="male" selected>남자</option>
+<option value="female">여자</option>
+</select>
+
+속도:
+<input type="range" min="0" max="5" step="0.1" value="2.5" id="speed">
+<span id="speedVal">2.5</span>
+</div>
+
+<div class="scriptBox">
+대본:
+<textarea id="scriptInput">
+종대: 니 지금 뭐하냐?!
+한별: 아무것도 안했는데요
+종대: 거짓말하지 마라
+한별: 거짓말?! 나보다 어려 보이는 고만..확!
+  *예시처럼 대본을 작성해 주세요
   *역할 이름 기재해 주세요
 </textarea>
 </div>
