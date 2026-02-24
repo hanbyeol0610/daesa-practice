@@ -5,112 +5,139 @@
 <title>대본연습</title>
 
 <style>
-body {
-    margin: 0;
-    font-family: monospace;
-    background: #5c94fc;
-    text-align: center;
+
+body{
+    margin:0;
+    background:#6B8CFF;
+    font-family: sans-serif;
+    text-align:center;
 }
 
-/* 게임 박스 */
-.gamebox {
-    width: 800px;
-    margin: 20px auto;
-    background: #84b4fc;
-    border: 6px solid black;
-    padding: 10px;
+.container{
+    max-width:700px;
+    margin:auto;
+    padding:10px;
 }
 
-/* 간판 */
-.banner {
-    width: 100%;
-    image-rendering: pixelated;
-    border: 4px solid black;
-    margin-bottom: 10px;
+.banner{
+    width:100%;
+    border-radius:10px;
+    margin-bottom:10px;
 }
 
-/* 대사창 */
-.scriptbox {
-    background: white;
-    border: 5px solid black;
-    padding: 20px;
-    height: 120px;
-    font-size: 22px;
-    margin-top: 10px;
+.script{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    font-size:22px;
+    min-height:100px;
 }
 
-/* 버튼 */
-button {
-    font-size: 20px;
-    margin: 15px;
-    padding: 10px 20px;
-    background: #f6eb14;
-    border: 4px solid black;
-    cursor: pointer;
+button{
+    font-size:20px;
+    padding:15px;
+    margin-top:10px;
+    width:100%;
+    border:none;
+    border-radius:10px;
+    background:#FFD93D;
 }
 
-button:hover {
-    background: #ff9526;
+textarea{
+    width:100%;
+    height:120px;
+    font-size:16px;
+    margin-top:10px;
 }
+
 </style>
 
 </head>
 
 <body>
 
-<div class="gamebox">
+<div class="container">
 
-<!-- 간판 -->
 <img src="banner.png" class="banner">
 
-<!-- 대사창 -->
-<div class="scriptbox" id="script">
+<textarea id="scriptInput">종대: 니 왔나
+대번: 왔다
+종대: 늦었다
+대번: 미안하다</textarea>
+
+<div class="script" id="output">
 연습 시작을 누르세요
 </div>
 
-<!-- 버튼 -->
 <button onclick="startPractice()">연습 시작</button>
+<button onclick="nextLine()">다음</button>
+<button onclick="prevLine()">이전</button>
 
 </div>
 
 <script>
 
-let lines = [
-"니 왔나?",
-"와 이렇게 늦노",
-"연습 시작하자",
-"준비됐나?"
-];
+let lines = [];
+let index = -1;
 
-let index = 0;
+function parseScript(){
+    let text = document.getElementById("scriptInput").value;
+    lines = text.split("\n");
+}
 
 function speak(text){
-    let speech = new SpeechSynthesisUtterance(text);
-    speech.lang = "ko-KR";
-    speech.rate = 0.9;
-    speech.pitch = 1.1;
+
     speechSynthesis.cancel();
-    speechSynthesis.speak(speech);
+
+    const utter = new SpeechSynthesisUtterance(text);
+
+    utter.lang = "ko-KR";
+    utter.rate = 0.95;
+    utter.pitch = 1.05;
+
+    const voices = speechSynthesis.getVoices();
+
+    let bestVoice = voices.find(v =>
+        v.lang.includes("ko")
+    );
+
+    if(bestVoice){
+        utter.voice = bestVoice;
+    }
+
+    speechSynthesis.speak(utter);
 }
 
 function startPractice(){
-    index = 0;
+    parseScript();
+    index = -1;
     nextLine();
 }
 
 function nextLine(){
 
+    index++;
+
     if(index >= lines.length) return;
 
     let line = lines[index];
 
-    document.getElementById("script").innerText = line;
+    document.getElementById("output").innerText = line;
 
     speak(line);
+}
 
-    index++;
+function prevLine(){
 
-    setTimeout(nextLine, 2500);
+    index--;
+
+    if(index < 0) index = 0;
+
+    let line = lines[index];
+
+    document.getElementById("output").innerText = line;
+
+    speak(line);
 }
 
 </script>
