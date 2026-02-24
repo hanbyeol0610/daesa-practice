@@ -3,115 +3,128 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>대사연습</title>
+<title>대본연습</title>
 
 <style>
+
 body {
-    background-color: #111;
-    color: white;
-    font-family: sans-serif;
-    padding: 20px;
+    background-color: #0f0f0f;
+    color: #00ffcc;
+    font-family: monospace;
+    margin: 0;
+    padding: 0;
 }
 
-h1 {
-    text-align: center;
+.banner {
+    width: 100%;
+    image-rendering: pixelated;
 }
 
 .container {
-    background: #1e1e1e;
     padding: 20px;
-    border-radius: 15px;
+}
+
+.panel {
+    background: #1a1a1a;
+    border: 3px solid #00ffcc;
+    padding: 15px;
     margin-bottom: 20px;
+    border-radius: 10px;
 }
 
 input, textarea, select {
     width: 100%;
     padding: 10px;
     margin-top: 5px;
-    margin-bottom: 15px;
-    border-radius: 8px;
-    border: none;
-    background: #333;
-    color: white;
-    font-size: 16px;
+    margin-bottom: 10px;
+    background: black;
+    color: #00ffcc;
+    border: 2px solid #00ffcc;
+    font-family: monospace;
 }
 
 button {
     width: 100%;
     padding: 15px;
-    margin-top: 10px;
-    border-radius: 10px;
-    border: none;
-    font-size: 18px;
-    background: #007AFF;
-    color: white;
+    margin-top: 5px;
+    background: black;
+    color: #00ffcc;
+    border: 3px solid #00ffcc;
+    font-size: 16px;
+    cursor: pointer;
 }
 
-button.secondary {
-    background: #444;
+button:hover {
+    background: #00ffcc;
+    color: black;
 }
 
-.dialogBox {
-    background: #222;
+.dialog {
+    background: black;
+    border: 3px solid #00ffcc;
     padding: 15px;
-    border-radius: 10px;
-    margin-top: 10px;
+    min-height: 80px;
     font-size: 18px;
-    min-height: 60px;
 }
 
-.myLine {
-    color: #00ff88;
+.myline {
+    color: #ffff00;
     margin-top: 10px;
 }
+
 </style>
 </head>
 
 <body>
 
-<h1>🎭 대사연습</h1>
+<img src="banner.png" class="banner">
 
 <div class="container">
 
-<label>내 배역</label>
+<div class="panel">
+
+내 역할
 <input id="myRole" placeholder="예: 조판수">
 
-<label>목소리 선택</label>
+목소리
 <select id="voiceSelect">
 <option value="male">남자</option>
 <option value="female">여자</option>
 </select>
 
-<label>대사 속도: <span id="speedValue">1</span></label>
-<input type="range" id="speedControl" min="0.5" max="2" step="0.1" value="1">
+속도 <span id="speedValue">1</span>
+<input type="range" id="speedControl" min="0.6" max="1.4" step="0.1" value="1">
 
 </div>
 
-<div class="container">
+<div class="panel">
 
-<label>대본 입력 (배역:대사 형식)</label>
-<textarea id="scriptInput" rows="10" placeholder="조판수: 전화 왜 안 받았어?
+대본 입력 (배역:대사)
+<textarea id="scriptInput" rows="8">조판수: 전화 왜 안 받았어
 이강희: 바빴어
-조판수: 다음부터는 받아"></textarea>
+조판수: 다음부터는 받아
+이강희: 알겠어</textarea>
 
 </div>
 
-<div class="container">
+<div class="panel">
 
-<button onclick="startPractice()">🎬 연습 시작</button>
-<button onclick="prevLine()" class="secondary">⬅ 이전</button>
-<button onclick="nextLine()">➡ 다음</button>
-<button onclick="speak()">🔊 상대 대사</button>
-<button onclick="showMyLine()" class="secondary">📖 내 대사</button>
+<button onclick="startPractice()">연습 시작</button>
+<button onclick="prevLine()">이전</button>
+<button onclick="nextLine()">다음</button>
+<button onclick="speak()">상대 대사 재생</button>
+<button onclick="showMyLine()">내 대사 보기</button>
 
 </div>
 
-<div class="container">
+<div class="panel">
 
-<div>🎭 상대 대사</div>
-<div id="otherDisplay" class="dialogBox"></div>
+상대 대사
+<div id="otherDisplay" class="dialog"></div>
 
-<div id="myDisplay" class="myLine"></div>
+<div id="myDisplay" class="myline"></div>
+
+</div>
 
 </div>
 
@@ -173,6 +186,9 @@ function prevLine() {
 }
 
 function showLine() {
+
+    if(currentIndex < 0) return;
+
     document.getElementById("otherDisplay").innerText =
         script[currentIndex].role + ": " + script[currentIndex].line;
 
@@ -192,24 +208,30 @@ function showMyLine() {
 
 function speak() {
 
+    if(currentIndex < 0) return;
+
     const text = script[currentIndex].line;
     const speed = parseFloat(speedControl.value);
-    const voiceType = document.getElementById("voiceSelect").value;
 
     speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
 
     utterance.rate = speed;
+    utterance.pitch = 1.0;
     utterance.lang = "ko-KR";
 
     const voices = speechSynthesis.getVoices();
 
-    if (voiceType === "female") {
-        utterance.voice = voices.find(v => v.name.includes("Female")) || voices[0];
+    let voice;
+
+    if(document.getElementById("voiceSelect").value === "female"){
+        voice = voices.find(v => v.lang.includes("ko") && v.name.includes("Female"));
     } else {
-        utterance.voice = voices.find(v => v.name.includes("Male")) || voices[0];
+        voice = voices.find(v => v.lang.includes("ko"));
     }
+
+    if(voice) utterance.voice = voice;
 
     speechSynthesis.speak(utterance);
 }
