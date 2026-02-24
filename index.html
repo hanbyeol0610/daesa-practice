@@ -2,125 +2,90 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>대본연습</title>
+<title>대사 연습</title>
 
 <style>
 
 body{
     margin:0;
-    background:#181818;
-    color:#eee;
-    font-family:Arial;
-}
-
-.container{
-    max-width:800px;
-    margin:auto;
-    padding:15px;
+    background:#1a1a1a;
+    color:white;
+    font-family:serif;
 }
 
 .banner{
     width:100%;
+    height:140px;
+    background:url("banner.jpg") center/cover no-repeat;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+    padding:20px;
+}
+
+.scriptBox{
+    background:#f5f5f5;
+    color:black;
+    padding:15px;
+    border-radius:10px;
     margin-bottom:15px;
 }
 
-/* 역할 */
-.roleBox{
-    background:#fff;
-    color:#000;
-    border:2px solid #c9a646;
-    font-size:18px;
-    padding:10px;
-}
-
-/* 대본 */
-.scriptInput{
-    background:#fff;
-    color:#000;
-    border:2px solid #c9a646;
-    font-family:monospace;
-    font-size:18px;
-    line-height:1.8;
-    padding:10px;
+textarea{
     width:100%;
-    height:320px;
-}
-
-/* 상대 대사 */
-.scriptBox{
-    background:#111;
-    border:1px solid #666;
-    padding:20px;
-    font-size:24px;
-    min-height:80px;
-    text-align:center;
-    margin-top:10px;
-}
-
-/* HP바 */
-.hpContainer{
-    width:100%;
-    height:14px;
-    background:#333;
-    margin-top:5px;
-}
-
-.hpBar{
-    height:100%;
-    width:100%;
-    background:#4caf50;
-}
-
-/* 내 대사 */
-.myLine{
-    margin-top:10px;
-    padding:15px;
-    border:1px dashed #aaa;
-    display:none;
-    font-size:20px;
-    background:#222;
-}
-
-button{
-    font-size:18px;
-    padding:12px;
-    margin-top:6px;
-    width:100%;
-    background:#333;
-    color:white;
-    border:none;
-}
-
-.bigBtn{
-    font-size:26px;
-    background:#d4af37;
+    height:200px;
+    font-size:16px;
+    background:white;
     color:black;
 }
 
-.row{
+.display{
+    background:#111;
+    padding:15px;
+    border-radius:10px;
+    min-height:60px;
+    margin-bottom:10px;
+}
+
+.buttons{
     display:flex;
-    gap:10px;
-}
-
-.autoOn{
-    background:#2e7d32;
-}
-
-.autoOff{
-    background:#444;
-}
-
-.iconRow{
-    display:flex;
-    gap:8px;
-    justify-content:center;
+    justify-content:space-between;
     margin-top:10px;
 }
 
-.iconBtn{
-    width:40px;
-    height:40px;
+button{
+    padding:10px 20px;
     font-size:18px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.bigBtn{
+    font-size:22px;
+    padding:12px 30px;
+}
+
+.gauge{
+    height:12px;
+    background:#333;
+    margin-top:10px;
+    border-radius:6px;
+    overflow:hidden;
+}
+
+.gaugeBar{
+    height:100%;
+    width:100%;
+    background:gold;
+}
+
+.smallBtns{
+    margin-top:10px;
+    display:flex;
+    gap:10px;
 }
 
 </style>
@@ -128,224 +93,185 @@ button{
 
 <body>
 
+<div class="banner"></div>
+
 <div class="container">
 
-<img src="banner.png" class="banner">
+<div class="scriptBox">
+역할:
+<input id="roleInput" placeholder="예: 종대">
 
-<input id="myRole" class="roleBox" placeholder="내 역할 입력">
-
-<br>
-
-속도:
-<input type="range" id="speed" min="0.1" max="2" step="0.1" value="1">
-<span id="speedVal">1.0</span>
-
-<textarea id="scriptInput" class="scriptInput">
-종대: 형님 왜 그러십니까
-판수: 넌 빠져
-종대: 이번엔 다릅니다
-판수: 조용히 해
+대본:
+<textarea id="scriptInput">
+종대: 니 지금 뭐하노
+대번: 아무것도 안했는데요
+종대: 거짓말하지 마라
+대번: 진짜라니까요
 </textarea>
+</div>
 
-<div class="scriptBox" id="otherLine">
+<div class="display" id="display">
 &lt;상대 대사&gt;
 </div>
 
-<div class="hpContainer">
-<div class="hpBar" id="hpBar"></div>
+<div class="gauge">
+<div class="gaugeBar" id="gaugeBar"></div>
 </div>
 
-<div class="myLine" id="myLine"></div>
+<div class="buttons">
+<button class="bigBtn" onclick="prevLine()">이전</button>
+<button class="bigBtn" onclick="nextLine()">다음</button>
+</div>
 
+<div class="smallBtns">
 <button onclick="startPractice()">연습 시작</button>
 <button onclick="showMyLine()">내 대사 보기</button>
-
-<div class="row">
-<button class="bigBtn" onclick="prevLine()">◀ 이전</button>
-<button class="bigBtn" onclick="nextLine()">다음 ▶</button>
+<button onclick="toggleAuto()">자동연습</button>
+<button onclick="saveScript()">💾</button>
+<button onclick="loadScript()">📂</button>
 </div>
 
-<button id="autoBtn" class="autoOff" onclick="toggleAuto()">
-자동 연습 OFF
-</button>
-
-<div class="iconRow">
-<button class="iconBtn" onclick="saveScript()">💾</button>
-<button class="iconBtn" onclick="loadScript()">📂</button>
-<button class="iconBtn" onclick="startRecording()">🎙</button>
-<button class="iconBtn" onclick="stopRecording()">■</button>
-<button class="iconBtn" onclick="playRecording()">▶</button>
-</div>
-
-<audio id="player"></audio>
+연습횟수: <span id="count">0</span>번
 
 </div>
 
 <script>
 
-let lines=[];
-let index=-1;
-let myRole="";
-let currentMyLine="";
-let autoMode=false;
-let autoTimeout;
-let mediaRecorder;
-let audioChunks=[];
+let lines = [];
+let index = 0;
+let role = "";
+let autoMode = false;
+let practiceCount = 0;
 
-/* 속도 표시 */
-speed.oninput=function(){
-    speedVal.innerText=this.value;
-}
+const synth = window.speechSynthesis;
 
-/* 파싱 */
 function parseScript(){
-    lines=scriptInput.value.split("\n");
+    const text = document.getElementById("scriptInput").value;
+    role = document.getElementById("roleInput").value.trim();
+    
+    lines = text.split("\n").map(line=>{
+        let parts = line.split(":");
+        return {
+            role:parts[0]?.trim(),
+            text:parts[1]?.trim()
+        };
+    });
 }
 
-/* 음성 */
-function speak(text){
-
-    speechSynthesis.cancel();
-
-    let utter=new SpeechSynthesisUtterance(text);
-    utter.lang="ko-KR";
-    utter.rate=parseFloat(speed.value);
-    utter.pitch=0.9;
-
-    speechSynthesis.speak(utter);
-
-    return estimateTime(text);
+function speak(text, callback){
+    let utter = new SpeechSynthesisUtterance(text);
+    utter.rate = speechRate;
+    utter.onend = callback;
+    synth.speak(utter);
 }
 
-/* 읽는 시간 */
-function estimateTime(text){
-    return (text.length*0.11)+2;
-}
+let speechRate = 1.0;
 
-/* HP바 */
-function startHP(duration){
-
-    let bar=hpBar;
-    let start=Date.now();
-
-    function frame(){
-
-        let t=(Date.now()-start)/1000;
-        let p=Math.max(0,1-(t/duration));
-
-        bar.style.width=(p*100)+"%";
-
-        if(p>0 && autoMode){
-            requestAnimationFrame(frame);
-        }
-    }
-
-    frame();
-}
-
-/* 다음 */
 function nextLine(){
-
-    myLine.style.display="none";
-
-    let found=false;
-
-    for(let i=0;i<lines.length*2;i++){
-
-        index++;
-        if(index>=lines.length) index=0;
-
-        let line=lines[index];
-        if(!line.includes(":")) continue;
-
-        let role=line.split(":")[0].trim();
-        let text=line.split(":")[1].trim();
-
-        if(role!==myRole && !found){
-
-            otherLine.innerText=text;
-
-            let time=speak(text);
-
-            if(autoMode){
-                startHP(time);
-                autoTimeout=setTimeout(nextLine,time*1000);
-            }
-
-            found=true;
-            continue;
-        }
-
-        if(found && role===myRole){
-            currentMyLine=text;
-            return;
-        }
-    }
-}
-
-/* 시작 */
-function startPractice(){
-
     parseScript();
-    myRole=myRoleInput.value.trim();
-
-    index=-1;
-    nextLine();
+    index++;
+    if(index>=lines.length){
+        index=0;
+        practiceCount++;
+        document.getElementById("count").innerText=practiceCount;
+    }
+    showLine();
 }
 
-/* 자동 */
-function toggleAuto(){
+function prevLine(){
+    parseScript();
+    index--;
+    if(index<0) index=0;
+    showLine();
+}
 
-    autoMode=!autoMode;
-
-    if(autoMode){
-        autoBtn.innerText="자동 연습 ON";
-        autoBtn.className="autoOn";
-        startPractice();
+function showLine(){
+    let line = lines[index];
+    
+    if(line.role===role){
+        document.getElementById("display").innerText="<내 차례>";
     }else{
-        autoBtn.innerText="자동 연습 OFF";
-        autoBtn.className="autoOff";
-        clearTimeout(autoTimeout);
-        hpBar.style.width="100%";
+        document.getElementById("display").innerText=line.text;
+        speak(line.text,()=>{
+            if(autoMode) autoNext();
+        });
     }
 }
 
-/* 내 대사 */
 function showMyLine(){
-    myLine.innerText=currentMyLine;
-    myLine.style.display="block";
-}
-
-/* 저장 */
-function saveScript(){
-    localStorage.setItem("script",scriptInput.value);
-    localStorage.setItem("role",myRoleInput.value);
-}
-
-/* 불러오기 */
-function loadScript(){
-    scriptInput.value=localStorage.getItem("script")||"";
-    myRoleInput.value=localStorage.getItem("role")||"";
-}
-
-/* 녹음 */
-async function startRecording(){
-    let stream=await navigator.mediaDevices.getUserMedia({audio:true});
-    mediaRecorder=new MediaRecorder(stream);
-    audioChunks=[];
-    mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
-    mediaRecorder.onstop=()=>{
-        player.src=URL.createObjectURL(new Blob(audioChunks));
+    let line = lines[index];
+    if(line.role===role){
+        document.getElementById("display").innerText=line.text;
     }
-    mediaRecorder.start();
 }
 
-function stopRecording(){
-    mediaRecorder.stop();
+function startPractice(){
+    parseScript();
+    index=0;
+    practiceCount=0;
+    document.getElementById("count").innerText=0;
+    showLine();
 }
 
-function playRecording(){
-    player.play();
+function toggleAuto(){
+    autoMode=!autoMode;
+    
+    if(autoMode){
+        startPractice();
+    }
+}
+
+function autoNext(){
+    index++;
+    if(index>=lines.length){
+        index=0;
+        practiceCount++;
+        document.getElementById("count").innerText=practiceCount;
+    }
+    
+    let line = lines[index];
+    
+    if(line.role===role){
+        let duration = (line.text.length * 80)+2000;
+        startGauge(duration);
+        
+        setTimeout(()=>{
+            autoNext();
+        },duration);
+        
+    }else{
+        showLine();
+    }
+}
+
+function startGauge(duration){
+    let bar = document.getElementById("gaugeBar");
+    bar.style.width="100%";
+    
+    let start = Date.now();
+    
+    let timer = setInterval(()=>{
+        let now = Date.now();
+        let percent = 100 - ((now-start)/duration)*100;
+        bar.style.width=percent+"%";
+        
+        if(percent<=0){
+            clearInterval(timer);
+        }
+    },50);
+}
+
+function saveScript(){
+    localStorage.setItem("script",document.getElementById("scriptInput").value);
+    localStorage.setItem("role",document.getElementById("roleInput").value);
+}
+
+function loadScript(){
+    document.getElementById("scriptInput").value=
+        localStorage.getItem("script")||"";
+        
+    document.getElementById("roleInput").value=
+        localStorage.getItem("role")||"";
 }
 
 </script>
