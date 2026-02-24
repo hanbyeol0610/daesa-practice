@@ -305,15 +305,6 @@ if(autoMode && !paused) autoNext();
 });
 }
 
-function showMyLine() {
-
-    for(let i = currentIndex + 1; i < script.length; i++) {
-        if(script[i].role === myRole){
-            document.getElementById("myDisplay").innerText =
-                myRole + ": " + script[i].line;
-            return;
-        }
-    }
 }
 function nextLine(){
 
@@ -337,6 +328,16 @@ if(index<0) index=lines.length-1;
 }while(lines[index].role===role);
 
 showLine();
+}
+
+function showMyLine(){
+
+if(currentMyLine==="") return;
+
+let box=document.getElementById("myLine");
+
+box.innerText=currentMyLine;
+box.style.display="block";
 }
 
 function startPractice(){
