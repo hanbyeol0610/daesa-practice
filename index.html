@@ -58,7 +58,6 @@ background:white;
 color:black;
 }
 
-/* 대사 표시 */
 .display{
 background:#111;
 padding:20px;
@@ -68,7 +67,6 @@ margin-bottom:10px;
 font-size:20px;
 }
 
-/* 게이지 */
 .gauge{
 height:14px;
 background:#333;
@@ -83,7 +81,6 @@ width:100%;
 background:gold;
 }
 
-/* 버튼 */
 .fullBtn{
 width:100%;
 background:#777;
@@ -99,6 +96,19 @@ margin-bottom:10px;
 .pauseBtn{
 width:100%;
 background:#c0392b;
+color:white;
+font-size:22px;
+padding:15px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+margin-bottom:10px;
+display:none;
+}
+
+.resumeBtn{
+width:100%;
+background:#27ae60;
 color:white;
 font-size:22px;
 padding:15px;
@@ -164,7 +174,6 @@ font-size:14px;
 <div class="container">
 
 <div class="section">
-
 역할:
 <input id="roleInput" placeholder="예: 종대">
 
@@ -179,21 +188,16 @@ font-size:14px;
 속도:
 <input type="range" min="0" max="5" step="0.1" value="2.5" id="speed">
 <span id="speedVal">2.5</span>
-
 </div>
 
 <div class="scriptBox">
-
 대본:
 <textarea id="scriptInput">
 종대: 니 지금 뭐하냐?!
 한별: 아무것도 안했는데요
 종대: 거짓말하지 마라
 한별: 거짓말?! 나보다 어려 보이는 고만..확!
-  
-<대사를 붙여 넣으세요>
 </textarea>
-
 </div>
 
 <div class="display" id="display">
@@ -208,9 +212,12 @@ font-size:14px;
 연습 시작
 </button>
 
-<!-- ✅ 일시정지 버튼 -->
 <button id="pauseBtn" class="pauseBtn" onclick="pauseAuto()">
 ⏸ 일시정지
+</button>
+
+<button id="resumeBtn" class="resumeBtn" onclick="resumeAuto()">
+▶ 다시하기
 </button>
 
 <button class="fullBtn" onclick="showMyLine()">
@@ -218,19 +225,9 @@ font-size:14px;
 </button>
 
 <div class="row">
-
-<button class="yellowBtn" onclick="prevLine()">
-이전
-</button>
-
-<button id="autoBtn" class="autoOff" onclick="toggleAuto()">
-자동연습 OFF
-</button>
-
-<button class="yellowBtn" onclick="nextLine()">
-다음
-</button>
-
+<button class="yellowBtn" onclick="prevLine()">이전</button>
+<button id="autoBtn" class="autoOff" onclick="toggleAuto()">자동연습 OFF</button>
+<button class="yellowBtn" onclick="nextLine()">다음</button>
 </div>
 
 <br>
@@ -251,68 +248,44 @@ let lines=[];
 let index=0;
 let role="";
 let autoMode=false;
-let timer=null;
+let paused=false;
+
+let gaugeTimer=null;
+let autoTimer=null;
+
+let remainingTime=0;
+let startTime=0;
 
 const synth=window.speechSynthesis;
 
-speechSynthesis.onvoiceschanged = function(){
-speechSynthesis.getVoices();
-};
-
 function parseScript(){
-
 role=document.getElementById("roleInput").value.trim();
-
 lines=document.getElementById("scriptInput").value
 .split("\n")
 .map(l=>{
 let p=l.split(":");
-return {
-role:p[0]?.trim(),
-text:p[1]?.trim()
-};
+return { role:p[0]?.trim(), text:p[1]?.trim() };
 });
-
 }
 
 function getVoice(){
-
-let voices = synth.getVoices();
-let koVoices = voices.filter(v => v.lang.includes("ko"));
-
-let naturalVoice = koVoices.find(v =>
-v.name.includes("Google") ||
-v.name.includes("Microsoft") ||
-v.name.includes("Korean")
-);
-
-return naturalVoice || koVoices[0];
-
+let voices=synth.getVoices();
+return voices.find(v=>v.lang.includes("ko")) || voices[0];
 }
 
 function speak(text,callback){
 
-let utter = new SpeechSynthesisUtterance(text);
+let utter=new SpeechSynthesisUtterance(text);
+let gender=document.getElementById("voiceSelect").value;
 
-let gender = document.getElementById("voiceSelect").value;
-
-utter.voice = getVoice();
-utter.lang = "ko-KR";
-utter.rate = parseFloat(document.getElementById("speed").value)/2.5;
-
-if(gender === "male"){
-utter.pitch = 0.5;
-}else{
-utter.pitch = 1.3;
-}
-
-utter.volume = 1;
-
-utter.onend = callback;
+utter.voice=getVoice();
+utter.lang="ko-KR";
+utter.rate=parseFloat(document.getElementById("speed").value)/2.5;
+utter.pitch = gender==="male"?0.6:1.3;
+utter.onend=callback;
 
 synth.cancel();
 synth.speak(utter);
-
 }
 
 function showLine(){
@@ -323,21 +296,13 @@ if(index>=lines.length)index=0;
 let line=lines[index];
 
 if(line.role===role){
-
 document.getElementById("display").innerText="<내 차례>";
-
-if(autoMode){
-autoNext();
-}
-
+if(autoMode && !paused) autoNext();
 }else{
-
 document.getElementById("display").innerText=line.text;
-
 speak(line.text,()=>{
-if(autoMode)autoNext();
+if(autoMode && !paused) autoNext();
 });
-
 }
 
 }
@@ -352,7 +317,6 @@ if(index>=lines.length) index=0;
 }while(lines[index].role===role);
 
 showLine();
-
 }
 
 function prevLine(){
@@ -365,82 +329,86 @@ if(index<0) index=lines.length-1;
 }while(lines[index].role===role);
 
 showLine();
-
-}
-
-function showMyLine(){
-
-let line=lines[index];
-
-if(line.role===role){
-document.getElementById("display").innerText=line.text;
-}
-
 }
 
 function startPractice(){
-
 parseScript();
 index=0;
 showLine();
-
 }
 
 function toggleAuto(){
 
 autoMode=!autoMode;
-
 let btn=document.getElementById("autoBtn");
-let pauseBtn=document.getElementById("pauseBtn");
 
 if(autoMode){
-
 btn.className="autoOn";
 btn.innerText="자동연습 ON";
-
-pauseBtn.style.display="block"; // ← 버튼 표시
-
+document.getElementById("pauseBtn").style.display="block";
 startPractice();
-
 }else{
-
 stopAuto();
-
 }
 
 }
 
 function pauseAuto(){
 
-autoMode=false;
-
+paused=true;
 synth.cancel();
-clearTimeout(timer);
 
-document.getElementById("display").innerText="⏸ 일시정지";
+clearTimeout(autoTimer);
+clearInterval(gaugeTimer);
+
+remainingTime -= (Date.now()-startTime);
+
+document.getElementById("pauseBtn").style.display="none";
+document.getElementById("resumeBtn").style.display="block";
+
+}
+
+function resumeAuto(){
+
+paused=false;
+
+startGauge(remainingTime);
+
+startTime=Date.now();
+
+autoTimer=setTimeout(()=>{
+autoNext();
+},remainingTime);
+
+document.getElementById("pauseBtn").style.display="block";
+document.getElementById("resumeBtn").style.display="none";
 
 }
 
 function stopAuto(){
 
 autoMode=false;
+paused=false;
 
 document.getElementById("autoBtn").className="autoOff";
 document.getElementById("autoBtn").innerText="자동연습 OFF";
 
 document.getElementById("pauseBtn").style.display="none";
+document.getElementById("resumeBtn").style.display="none";
+
+clearTimeout(autoTimer);
+clearInterval(gaugeTimer);
 
 synth.cancel();
 
 document.getElementById("display").innerText="<상대 대사>";
-
 document.getElementById("gaugeBar").style.width="100%";
 
 }
 
 function autoNext(){
 
-if(!autoMode)return;
+if(!autoMode || paused) return;
 
 index++;
 
@@ -453,18 +421,19 @@ let line=lines[index];
 
 if(line.role===role){
 
-let duration=(line.text.length*80)+6000; // ← +6초 변경
+let duration=(line.text.length*80)+6000;
+
+remainingTime=duration;
+startTime=Date.now();
 
 startGauge(duration);
 
-timer=setTimeout(()=>{
+autoTimer=setTimeout(()=>{
 autoNext();
 },duration);
 
 }else{
-
 showLine();
-
 }
 
 }
@@ -474,13 +443,17 @@ function startGauge(duration){
 let bar=document.getElementById("gaugeBar");
 let start=Date.now();
 
-timer=setInterval(()=>{
+clearInterval(gaugeTimer);
+
+gaugeTimer=setInterval(()=>{
+
+if(paused) return;
 
 let p=100-((Date.now()-start)/duration)*100;
 bar.style.width=p+"%";
 
 if(p<=0){
-clearInterval(timer);
+clearInterval(gaugeTimer);
 }
 
 },50);
@@ -488,27 +461,15 @@ clearInterval(timer);
 }
 
 function saveScript(){
-
-localStorage.setItem("script",
-document.getElementById("scriptInput").value);
-
-localStorage.setItem("role",
-document.getElementById("roleInput").value);
-
+localStorage.setItem("script",document.getElementById("scriptInput").value);
+localStorage.setItem("role",document.getElementById("roleInput").value);
 alert("저장됨");
-
 }
 
 function loadScript(){
-
-document.getElementById("scriptInput").value=
-localStorage.getItem("script")||"";
-
-document.getElementById("roleInput").value=
-localStorage.getItem("role")||"";
-
+document.getElementById("scriptInput").value=localStorage.getItem("script")||"";
+document.getElementById("roleInput").value=localStorage.getItem("role")||"";
 alert("불러옴");
-
 }
 
 document.getElementById("speed").oninput=function(){
