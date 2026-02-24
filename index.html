@@ -243,11 +243,6 @@ font-size:14px;
 </div>
 
 <script>
-let timerInterval = null;
-let remainingTime = 0;
-let totalTime = 0;
-let startTime = 0;
-let paused = false;
 
 let lines=[];
 let index=0;
@@ -261,8 +256,8 @@ let autoTimer=null;
 let remainingTime=0;
 let startTime=0;
 
-let gaugeStartPercent=100;
-let pausedPercent=100;
+let gaugeStartPercent = 100;
+let pausedPercent = 100;
 
 const synth=window.speechSynthesis;
 
@@ -413,7 +408,7 @@ document.getElementById("display").innerText="<상대 대사>";
 document.getElementById("gaugeBar").style.width="100%";
 
 }
-}
+
 function autoNext(){
 
 if(!autoMode || paused) return;
