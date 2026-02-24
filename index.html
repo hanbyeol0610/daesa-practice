@@ -2,238 +2,115 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>대본연습</title>
 
 <style>
-
 body {
-    background-color: #0f0f0f;
-    color: #00ffcc;
-    font-family: monospace;
     margin: 0;
-    padding: 0;
+    font-family: monospace;
+    background: #5c94fc;
+    text-align: center;
 }
 
+/* 게임 박스 */
+.gamebox {
+    width: 800px;
+    margin: 20px auto;
+    background: #84b4fc;
+    border: 6px solid black;
+    padding: 10px;
+}
+
+/* 간판 */
 .banner {
     width: 100%;
     image-rendering: pixelated;
-}
-
-.container {
-    padding: 20px;
-}
-
-.panel {
-    background: #1a1a1a;
-    border: 3px solid #00ffcc;
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 10px;
-}
-
-input, textarea, select {
-    width: 100%;
-    padding: 10px;
-    margin-top: 5px;
+    border: 4px solid black;
     margin-bottom: 10px;
-    background: black;
-    color: #00ffcc;
-    border: 2px solid #00ffcc;
-    font-family: monospace;
 }
 
+/* 대사창 */
+.scriptbox {
+    background: white;
+    border: 5px solid black;
+    padding: 20px;
+    height: 120px;
+    font-size: 22px;
+    margin-top: 10px;
+}
+
+/* 버튼 */
 button {
-    width: 100%;
-    padding: 15px;
-    margin-top: 5px;
-    background: black;
-    color: #00ffcc;
-    border: 3px solid #00ffcc;
-    font-size: 16px;
+    font-size: 20px;
+    margin: 15px;
+    padding: 10px 20px;
+    background: #f6eb14;
+    border: 4px solid black;
     cursor: pointer;
 }
 
 button:hover {
-    background: #00ffcc;
-    color: black;
+    background: #ff9526;
 }
-
-.dialog {
-    background: black;
-    border: 3px solid #00ffcc;
-    padding: 15px;
-    min-height: 80px;
-    font-size: 18px;
-}
-
-.myline {
-    color: #ffff00;
-    margin-top: 10px;
-}
-
 </style>
+
 </head>
 
 <body>
 
+<div class="gamebox">
+
+<!-- 간판 -->
 <img src="banner.png" class="banner">
 
-<div class="container">
-
-<div class="panel">
-
-내 역할
-<input id="myRole" placeholder="예: 조판수">
-
-목소리
-<select id="voiceSelect">
-<option value="male">남자</option>
-<option value="female">여자</option>
-</select>
-
-속도 <span id="speedValue">1</span>
-<input type="range" id="speedControl" min="0.6" max="1.4" step="0.1" value="1">
-
+<!-- 대사창 -->
+<div class="scriptbox" id="script">
+연습 시작을 누르세요
 </div>
 
-<div class="panel">
-
-대본 입력 (배역:대사)
-<textarea id="scriptInput" rows="8">조판수: 전화 왜 안 받았어
-이강희: 바빴어
-조판수: 다음부터는 받아
-이강희: 알겠어</textarea>
-
-</div>
-
-<div class="panel">
-
+<!-- 버튼 -->
 <button onclick="startPractice()">연습 시작</button>
-<button onclick="prevLine()">이전</button>
-<button onclick="nextLine()">다음</button>
-<button onclick="speak()">상대 대사 재생</button>
-<button onclick="showMyLine()">내 대사 보기</button>
-
-</div>
-
-<div class="panel">
-
-상대 대사
-<div id="otherDisplay" class="dialog"></div>
-
-<div id="myDisplay" class="myline"></div>
-
-</div>
 
 </div>
 
 <script>
 
-let script = [];
-let currentIndex = -1;
-let myRole = "";
+let lines = [
+"니 왔나?",
+"와 이렇게 늦노",
+"연습 시작하자",
+"준비됐나?"
+];
 
-const speedControl = document.getElementById("speedControl");
-const speedValue = document.getElementById("speedValue");
+let index = 0;
 
-speedControl.addEventListener("input", () => {
-    speedValue.textContent = speedControl.value;
-});
-
-function parseScript() {
-    const text = document.getElementById("scriptInput").value;
-    const lines = text.split("\n");
-
-    script = [];
-
-    lines.forEach(line => {
-        const parts = line.split(":");
-        if(parts.length >= 2){
-            script.push({
-                role: parts[0].trim(),
-                line: parts.slice(1).join(":").trim()
-            });
-        }
-    });
+function speak(text){
+    let speech = new SpeechSynthesisUtterance(text);
+    speech.lang = "ko-KR";
+    speech.rate = 0.9;
+    speech.pitch = 1.1;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(speech);
 }
 
-function startPractice() {
-    parseScript();
-    myRole = document.getElementById("myRole").value.trim();
-    currentIndex = -1;
+function startPractice(){
+    index = 0;
     nextLine();
 }
 
-function nextLine() {
-    for(let i = currentIndex + 1; i < script.length; i++) {
-        if(script[i].role !== myRole){
-            currentIndex = i;
-            showLine();
-            return;
-        }
-    }
-}
+function nextLine(){
 
-function prevLine() {
-    for(let i = currentIndex - 1; i >= 0; i--) {
-        if(script[i].role !== myRole){
-            currentIndex = i;
-            showLine();
-            return;
-        }
-    }
-}
+    if(index >= lines.length) return;
 
-function showLine() {
+    let line = lines[index];
 
-    if(currentIndex < 0) return;
+    document.getElementById("script").innerText = line;
 
-    document.getElementById("otherDisplay").innerText =
-        script[currentIndex].role + ": " + script[currentIndex].line;
+    speak(line);
 
-    document.getElementById("myDisplay").innerText = "";
-}
+    index++;
 
-function showMyLine() {
-
-    for(let i = currentIndex + 1; i < script.length; i++) {
-        if(script[i].role === myRole){
-            document.getElementById("myDisplay").innerText =
-                myRole + ": " + script[i].line;
-            return;
-        }
-    }
-}
-
-function speak() {
-
-    if(currentIndex < 0) return;
-
-    const text = script[currentIndex].line;
-    const speed = parseFloat(speedControl.value);
-
-    speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-
-    utterance.rate = speed;
-    utterance.pitch = 1.0;
-    utterance.lang = "ko-KR";
-
-    const voices = speechSynthesis.getVoices();
-
-    let voice;
-
-    if(document.getElementById("voiceSelect").value === "female"){
-        voice = voices.find(v => v.lang.includes("ko") && v.name.includes("Female"));
-    } else {
-        voice = voices.find(v => v.lang.includes("ko"));
-    }
-
-    if(voice) utterance.voice = voice;
-
-    speechSynthesis.speak(utterance);
+    setTimeout(nextLine, 2500);
 }
 
 </script>
