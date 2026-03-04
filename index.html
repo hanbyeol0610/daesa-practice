@@ -230,19 +230,18 @@ font-size:14px;
 저장 이름:
 <input id="saveName" placeholder="예: 오디션1">
 
+비밀번호:
+<input id="savePass" type="password" maxlength="4" placeholder="4자리">
+
 <br><br>
 
-<button class="small" onclick="saveScriptMulti()">💾 여러개 저장</button>
-<button class="small" onclick="loadScriptMulti()">📂 선택 불러오기</button>
+<button class="small" onclick="saveScript()">💾 저장</button>
+<button class="small" onclick="loadScript()">📂 불러오기</button>
 <button class="small" onclick="deleteScript()">🗑 삭제</button>
 
 <br><br>
 
 <select id="saveList" style="width:100%; padding:8px;"></select>
-
-<br>
-<button class="small" onclick="saveScript()">💾 저장</button>
-<button class="small" onclick="loadScript()">📂 불러오기</button>
 
 <br><br>
 
@@ -500,21 +499,6 @@ clearInterval(gaugeTimer);
 
 }
 
-function saveScript(){
-localStorage.setItem("script",document.getElementById("scriptInput").value);
-localStorage.setItem("role",document.getElementById("roleInput").value);
-alert("저장됨");
-}
-
-function loadScript(){
-document.getElementById("scriptInput").value=localStorage.getItem("script")||"";
-document.getElementById("roleInput").value=localStorage.getItem("role")||"";
-alert("불러옴");
-}
-
-document.getElementById("speed").oninput=function(){
-document.getElementById("speedVal").innerText=this.value;
-}
 function updateSaveList(){
 
 let list=document.getElementById("saveList");
@@ -540,19 +524,26 @@ list.appendChild(option);
 
 }
 
-// 여러개 저장
-function saveScriptMulti(){
+// 저장
+function saveScript(){
 
 let name=document.getElementById("saveName").value.trim();
+let pass=document.getElementById("savePass").value.trim();
 
 if(name===""){
 alert("이름 입력");
 return;
 }
 
+if(pass.length!==4){
+alert("비밀번호 4자리");
+return;
+}
+
 let data={
 script:document.getElementById("scriptInput").value,
-role:document.getElementById("roleInput").value
+role:document.getElementById("roleInput").value,
+pass:pass
 };
 
 localStorage.setItem("script_"+name,JSON.stringify(data));
@@ -563,14 +554,21 @@ alert("저장됨");
 
 }
 
-// 선택 불러오기
-function loadScriptMulti(){
+// 불러오기
+function loadScript(){
 
 let name=document.getElementById("saveList").value;
 
 if(!name) return;
 
+let inputPass=prompt("비밀번호 입력");
+
 let data=JSON.parse(localStorage.getItem("script_"+name));
+
+if(inputPass!==data.pass){
+alert("비밀번호 틀림");
+return;
+}
 
 document.getElementById("scriptInput").value=data.script;
 document.getElementById("roleInput").value=data.role;
@@ -586,6 +584,15 @@ let name=document.getElementById("saveList").value;
 
 if(!name) return;
 
+let inputPass=prompt("비밀번호 입력");
+
+let data=JSON.parse(localStorage.getItem("script_"+name));
+
+if(inputPass!==data.pass){
+alert("비밀번호 틀림");
+return;
+}
+
 localStorage.removeItem("script_"+name);
 
 updateSaveList();
@@ -594,7 +601,7 @@ alert("삭제됨");
 
 }
 
-// 시작할때 목록 불러오기
+// 시작시 목록 표시
 window.onload=function(){
 updateSaveList();
 }
