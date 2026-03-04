@@ -367,6 +367,11 @@ if(index>=lines.length)index=0;
 
 let line=lines[index];
 let display=document.getElementById("display");
+let gauge=document.getElementById("gaugeBar");
+
+// 게이지 초기화
+clearInterval(gaugeTimer);
+gauge.style.width="100%";
 
 // 지문이면
 if(line.type==="direction"){
@@ -381,7 +386,37 @@ if(autoMode && !paused) autoNext();
 return;
 }
 
-// 모든 대사 그냥 표시
+// 👉 내 대사면 표시 안하고 게이지만 내려감
+if(line.role===role){
+
+display.innerText="(내 대사 연습)";
+display.className="display";
+
+let duration=3000; // 3초 연습시간
+let start=Date.now();
+
+gaugeTimer=setInterval(()=>{
+
+let elapsed=Date.now()-start;
+let percent=100-(elapsed/duration*100);
+
+if(percent<=0){
+gauge.style.width="0%";
+clearInterval(gaugeTimer);
+
+if(autoMode && !paused){
+autoNext();
+}
+}else{
+gauge.style.width=percent+"%";
+}
+
+},50);
+
+return;
+}
+
+// 👉 상대 대사면 읽어줌
 display.innerText=line.text;
 display.className="display";
 
