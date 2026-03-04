@@ -253,6 +253,7 @@ let paused=false;
 let gaugeTimer=null;
 let autoTimer=null;
 
+let totalDuration=0;
 let remainingTime=0;
 let startTime=0;
 
@@ -356,12 +357,11 @@ stopAuto();
 function pauseAuto(){
 
 paused=true;
-synth.cancel();
 
 clearTimeout(autoTimer);
 clearInterval(gaugeTimer);
 
-remainingTime -= (Date.now()-startTime);
+remainingTime = totalDuration - (Date.now()-startTime);
 
 document.getElementById("pauseBtn").style.display="none";
 document.getElementById("resumeBtn").style.display="block";
@@ -372,9 +372,10 @@ function resumeAuto(){
 
 paused=false;
 
-startGauge(remainingTime);
-
 startTime=Date.now();
+totalDuration=remainingTime;
+
+startGauge(remainingTime);
 
 autoTimer=setTimeout(()=>{
 autoNext();
@@ -399,8 +400,6 @@ document.getElementById("resumeBtn").style.display="none";
 clearTimeout(autoTimer);
 clearInterval(gaugeTimer);
 
-synth.cancel();
-
 document.getElementById("display").innerText="<상대 대사>";
 document.getElementById("gaugeBar").style.width="100%";
 
@@ -423,6 +422,7 @@ if(line.role===role){
 
 let duration=(line.text.length*80)+6000;
 
+totalDuration=duration;
 remainingTime=duration;
 startTime=Date.now();
 
@@ -441,7 +441,6 @@ showLine();
 function startGauge(duration){
 
 let bar=document.getElementById("gaugeBar");
-let start=Date.now();
 
 clearInterval(gaugeTimer);
 
@@ -449,10 +448,12 @@ gaugeTimer=setInterval(()=>{
 
 if(paused) return;
 
-let p=100-((Date.now()-start)/duration)*100;
-bar.style.width=p+"%";
+let elapsed=Date.now()-startTime;
+let percent=100-(elapsed/duration)*100;
 
-if(p<=0){
+bar.style.width=percent+"%";
+
+if(percent<=0){
 clearInterval(gaugeTimer);
 }
 
