@@ -477,6 +477,22 @@ document.getElementById("speed").oninput=function(){
 document.getElementById("speedVal").innerText=this.value;
 }
 
+function showMyLine(){
+
+parseScript();
+
+let line = lines[index];
+
+if(!line) return;
+
+if(line.role === role){
+document.getElementById("display").innerText = line.text;
+}else{
+document.getElementById("display").innerText = "지금은 상대 차례입니다.";
+}
+
+}
+
 </script>
 
 </body>
