@@ -6,12 +6,7 @@
 <style>
 
 .direction{
-color:gold !important;
-font-weight:bold;
-}
-
-.mine{
-color:#00ff88 !important;
+color:gold;
 font-weight:bold;
 }
   
@@ -168,37 +163,6 @@ flex:1;
 padding:6px 10px;
 font-size:14px;
 }
-
-/* 모바일 최적화 */
-@media (max-width:768px){
-
-.container{
-padding:10px;
-}
-
-textarea{
-height:180px;
-font-size:18px;
-}
-
-.display{
-font-size:22px;
-min-height:120px;
-padding:25px;
-}
-
-.fullBtn{
-font-size:22px;
-padding:16px;
-}
-
-.yellowBtn, .autoOff, .autoOn{
-font-size:18px;
-padding:14px;
-}
-
-}
-
 </style>
 </head>
 
@@ -319,6 +283,7 @@ lines=document.getElementById("scriptInput").value
 .map(l=>{
 
 l=l.trim();
+
 if(!l) return null;
 
 if(l.includes(":")){
@@ -331,7 +296,7 @@ type:"dialogue"
 }else{
 return {
 role:"direction",
-text:l.replace("[지문]","").trim(),
+text:l,
 type:"direction"
 };
 }
@@ -342,8 +307,17 @@ type:"direction"
 }
 
 function getVoice(){
+
 let voices=synth.getVoices();
+
+let gender=document.getElementById("voiceSelect").value;
+
+if(gender==="male"){
 return voices.find(v=>v.lang.includes("ko")) || voices[0];
+}else{
+return voices.find(v=>v.lang.includes("ko")) || voices[0];
+}
+
 }
 
 function speak(text,callback){
@@ -353,6 +327,8 @@ let utter=new SpeechSynthesisUtterance(text);
 utter.voice=getVoice();
 utter.lang="ko-KR";
 utter.rate=parseFloat(document.getElementById("speed").value);
+utter.pitch=document.getElementById("voiceSelect").value==="male"?0.7:1.3;
+
 utter.onend=callback;
 
 synth.cancel();
@@ -367,11 +343,6 @@ if(index>=lines.length)index=0;
 
 let line=lines[index];
 let display=document.getElementById("display");
-let gauge=document.getElementById("gaugeBar");
-
-// 게이지 초기화
-clearInterval(gaugeTimer);
-gauge.style.width="100%";
 
 // 지문이면
 if(line.type==="direction"){
@@ -386,62 +357,36 @@ if(autoMode && !paused) autoNext();
 return;
 }
 
-// 👉 내 대사면 표시 안하고 게이지만 내려감
+// 내 대사
 if(line.role===role){
-
-display.innerText="(내 대사 연습)";
+display.innerText="<내 차례>";
 display.className="display";
-
-let duration=3000; // 3초 연습시간
-let start=Date.now();
-
-gaugeTimer=setInterval(()=>{
-
-let elapsed=Date.now()-start;
-let percent=100-(elapsed/duration*100);
-
-if(percent<=0){
-gauge.style.width="0%";
-clearInterval(gaugeTimer);
-
-if(autoMode && !paused){
-autoNext();
-}
+if(autoMode && !paused) autoNext();
 }else{
-gauge.style.width=percent+"%";
-}
-
-},50);
-
-return;
-}
-
-// 👉 상대 대사면 읽어줌
 display.innerText=line.text;
 display.className="display";
 
 speak(line.text,()=>{
 if(autoMode && !paused) autoNext();
 });
+}
 
 }
 
 function showMyLine(){
 
+parseScript();
+
 for(let i=index;i<lines.length;i++){
 if(lines[i].role===role){
-let d=document.getElementById("display");
-d.innerText=lines[i].text;
-d.className="display mine";
+document.getElementById("display").innerText=lines[i].text;
 return;
 }
 }
 
 for(let i=0;i<index;i++){
 if(lines[i].role===role){
-let d=document.getElementById("display");
-d.innerText=lines[i].text;
-d.className="display mine";
+document.getElementById("display").innerText=lines[i].text;
 return;
 }
 }
@@ -452,9 +397,10 @@ function nextLine(){
 
 parseScript();
 
+do{
 index++;
-
 if(index>=lines.length) index=0;
+}while(lines[index].role===role);
 
 showLine();
 }
@@ -463,9 +409,10 @@ function prevLine(){
 
 parseScript();
 
+do{
 index--;
-
 if(index<0) index=lines.length-1;
+}while(lines[index].role===role);
 
 showLine();
 }
@@ -474,6 +421,129 @@ function startPractice(){
 parseScript();
 index=0;
 showLine();
+}
+
+function toggleAuto(){
+
+autoMode=!autoMode;
+let btn=document.getElementById("autoBtn");
+
+if(autoMode){
+btn.className="autoOn";
+btn.innerText="자동연습 ON";
+document.getElementById("pauseBtn").style.display="block";
+startPractice();
+}else{
+stopAuto();
+}
+
+}
+
+function pauseAuto(){
+
+paused=true;
+
+clearTimeout(autoTimer);
+clearInterval(gaugeTimer);
+
+remainingTime = totalDuration - (Date.now()-startTime);
+
+document.getElementById("pauseBtn").style.display="none";
+document.getElementById("resumeBtn").style.display="block";
+
+}
+
+function resumeAuto(){
+
+paused=false;
+
+startTime = Date.now() - (totalDuration - remainingTime);
+
+startGauge(totalDuration);
+
+autoTimer=setTimeout(()=>{
+autoNext();
+},remainingTime);
+
+document.getElementById("pauseBtn").style.display="block";
+document.getElementById("resumeBtn").style.display="none";
+
+}
+
+function stopAuto(){
+
+autoMode=false;
+paused=false;
+
+document.getElementById("autoBtn").className="autoOff";
+document.getElementById("autoBtn").innerText="자동연습 OFF";
+
+document.getElementById("pauseBtn").style.display="none";
+document.getElementById("resumeBtn").style.display="none";
+
+clearTimeout(autoTimer);
+clearInterval(gaugeTimer);
+
+document.getElementById("display").innerText="<상대 대사>";
+document.getElementById("gaugeBar").style.width="100%";
+
+}
+
+function autoNext(){
+
+if(!autoMode || paused) return;
+
+index++;
+
+if(index>=lines.length){
+stopAuto();
+return;
+}
+
+let line=lines[index];
+
+if(line.role===role){
+
+let duration=(line.text.length*80)+4000; // 2초 빠르게
+
+totalDuration=duration;
+remainingTime=duration;
+startTime=Date.now();
+
+startGauge(duration);
+
+autoTimer=setTimeout(()=>{
+autoNext();
+},duration);
+
+}else{
+showLine();
+}
+
+}
+
+function startGauge(duration){
+
+let bar=document.getElementById("gaugeBar");
+
+clearInterval(gaugeTimer);
+
+gaugeTimer=setInterval(()=>{
+
+let elapsed=Date.now()-startTime;
+let percent=100-(elapsed/duration)*100;
+
+if(percent<0) percent=0;
+if(percent>100) percent=100;
+
+bar.style.width=percent+"%";
+
+if(percent<=0){
+clearInterval(gaugeTimer);
+}
+
+},50);
+
 }
 
 function updateSaveList(){
@@ -488,8 +558,8 @@ let key=localStorage.key(i);
 if(key.startsWith("script_")){
 
 let name=key.replace("script_","");
-let option=document.createElement("option");
 
+let option=document.createElement("option");
 option.value=name;
 option.text=name;
 
@@ -501,10 +571,16 @@ list.appendChild(option);
 
 }
 
+// 저장
 function saveScript(){
 
 let name=document.getElementById("saveName").value.trim();
 let pass=document.getElementById("savePass").value.trim();
+
+if(name===""){
+alert("이름 입력");
+return;
+}
 
 if(pass.length!==4){
 alert("비밀번호 4자리");
@@ -518,19 +594,25 @@ pass:pass
 };
 
 localStorage.setItem("script_"+name,JSON.stringify(data));
+
 updateSaveList();
+
 alert("저장됨");
 
 }
 
+// 불러오기
 function loadScript(){
 
 let name=document.getElementById("saveList").value;
+
+if(!name) return;
+
 let inputPass=prompt("비밀번호 입력");
 
 let data=JSON.parse(localStorage.getItem("script_"+name));
 
-if(data.pass && inputPass!==data.pass){
+if(inputPass!==data.pass){
 alert("비밀번호 틀림");
 return;
 }
@@ -542,99 +624,34 @@ alert("불러옴");
 
 }
 
+// 삭제
 function deleteScript(){
 
 let name=document.getElementById("saveList").value;
+
+if(!name) return;
+
 let inputPass=prompt("비밀번호 입력");
 
 let data=JSON.parse(localStorage.getItem("script_"+name));
 
-if(data.pass && inputPass!==data.pass){
+if(inputPass!==data.pass){
 alert("비밀번호 틀림");
 return;
 }
 
 localStorage.removeItem("script_"+name);
+
 updateSaveList();
+
 alert("삭제됨");
 
 }
 
+// 시작시 목록 표시
 window.onload=function(){
 updateSaveList();
 }
-
-function toggleAuto(){
-
-autoMode=!autoMode;
-
-let btn=document.getElementById("autoBtn");
-
-if(autoMode){
-btn.innerText="자동연습 ON";
-btn.className="autoOn";
-document.getElementById("pauseBtn").style.display="block";
-startAuto();
-}else{
-btn.innerText="자동연습 OFF";
-btn.className="autoOff";
-document.getElementById("pauseBtn").style.display="none";
-document.getElementById("resumeBtn").style.display="none";
-stopAuto();
-}
-
-}
-
-function startAuto(){
-paused=false;
-autoNext();
-}
-
-function stopAuto(){
-autoMode=false;
-paused=false;
-clearTimeout(autoTimer);
-}
-
-function autoNext(){
-
-if(!autoMode || paused) return;
-
-clearTimeout(autoTimer);
-
-autoTimer=setTimeout(()=>{
-
-index++;
-if(index>=lines.length) index=0;
-
-showLine();
-
-},1500);
-
-}
-
-function pauseAuto(){
-
-paused=true;
-
-document.getElementById("pauseBtn").style.display="none";
-document.getElementById("resumeBtn").style.display="block";
-
-clearTimeout(autoTimer);
-
-}
-
-function resumeAuto(){
-
-paused=false;
-
-document.getElementById("pauseBtn").style.display="block";
-document.getElementById("resumeBtn").style.display="none";
-
-autoNext();
-
-}
-
 </script>
 
 </body>
