@@ -481,16 +481,21 @@ function showMyLine(){
 
 parseScript();
 
-let line = lines[index];
-
-if(!line) return;
-
-if(line.role === role){
-document.getElementById("display").innerText = line.text;
-}else{
-document.getElementById("display").innerText = "지금은 상대 차례입니다.";
+// 현재 위치부터 끝까지 다음 내 대사 찾기
+for(let i=index; i<lines.length; i++){
+    if(lines[i].role === role){
+        document.getElementById("display").innerText = lines[i].text;
+        return;
+    }
 }
 
+// 끝까지 없으면 처음부터 다시 찾기
+for(let i=0; i<index; i++){
+    if(lines[i].role === role){
+        document.getElementById("display").innerText = lines[i].text;
+        return;
+    }
+}
 }
 
 </script>
