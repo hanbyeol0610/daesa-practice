@@ -5,7 +5,6 @@
 <title>대본 연습</title>
 
 <style>
-  
 body{
 margin:0;
 background:#1a1a1a;
@@ -13,7 +12,6 @@ color:white;
 font-family:Arial;
 }
 
-/* 배너 */
 .banner{
 width:100%;
 max-width:900px;
@@ -28,7 +26,6 @@ height:auto;
 display:block;
 }
 
-/* 컨테이너 */
 .container{
 max-width:900px;
 margin:auto;
@@ -161,7 +158,6 @@ flex:1;
 padding:6px 10px;
 font-size:14px;
 }
-
 </style>
 </head>
 
@@ -269,26 +265,6 @@ return { role:p[0]?.trim(), text:p[1]?.trim() };
 });
 }
 
-function getVoice(){
-let voices=synth.getVoices();
-return voices.find(v=>v.lang.includes("ko")) || voices[0];
-}
-
-function speak(text,callback){
-
-let utter=new SpeechSynthesisUtterance(text);
-let gender=document.getElementById("voiceSelect").value;
-
-utter.voice=getVoice();
-utter.lang="ko-KR";
-utter.rate=parseFloat(document.getElementById("speed").value)/2.5;
-utter.pitch = gender==="male"?0.6:1.3;
-utter.onend=callback;
-
-synth.cancel();
-synth.speak(utter);
-}
-
 function showLine(){
 
 if(index<0)index=0;
@@ -301,34 +277,25 @@ document.getElementById("display").innerText="<내 차례>";
 if(autoMode && !paused) autoNext();
 }else{
 document.getElementById("display").innerText=line.text;
-speak(line.text,()=>{
-if(autoMode && !paused) autoNext();
-});
 }
 
 }
 
 function nextLine(){
-
 parseScript();
-
 do{
 index++;
 if(index>=lines.length) index=0;
 }while(lines[index].role===role);
-
 showLine();
 }
 
 function prevLine(){
-
 parseScript();
-
 do{
 index--;
 if(index<0) index=lines.length-1;
 }while(lines[index].role===role);
-
 showLine();
 }
 
@@ -362,6 +329,7 @@ clearTimeout(autoTimer);
 clearInterval(gaugeTimer);
 
 remainingTime = totalDuration - (Date.now()-startTime);
+if(remainingTime < 0) remainingTime = 0;
 
 document.getElementById("pauseBtn").style.display="none";
 document.getElementById("resumeBtn").style.display="block";
@@ -372,8 +340,8 @@ function resumeAuto(){
 
 paused=false;
 
-startTime=Date.now();
-totalDuration=remainingTime;
+startTime = Date.now();
+totalDuration = remainingTime;
 
 startGauge(remainingTime);
 
@@ -400,7 +368,6 @@ document.getElementById("resumeBtn").style.display="none";
 clearTimeout(autoTimer);
 clearInterval(gaugeTimer);
 
-document.getElementById("display").innerText="<상대 대사>";
 document.getElementById("gaugeBar").style.width="100%";
 
 }
@@ -449,7 +416,9 @@ gaugeTimer=setInterval(()=>{
 if(paused) return;
 
 let elapsed=Date.now()-startTime;
-let percent=100-(elapsed/duration)*100;
+let percent=100-(elapsed/totalDuration)*100;
+
+if(percent < 0) percent = 0;
 
 bar.style.width=percent+"%";
 
