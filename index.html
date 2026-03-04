@@ -361,7 +361,9 @@ paused=true;
 clearTimeout(autoTimer);
 clearInterval(gaugeTimer);
 
+// 남은 시간 계산
 remainingTime = totalDuration - (Date.now()-startTime);
+if(remainingTime < 0) remainingTime = 0;
 
 document.getElementById("pauseBtn").style.display="none";
 document.getElementById("resumeBtn").style.display="block";
@@ -372,10 +374,11 @@ function resumeAuto(){
 
 paused=false;
 
-startTime=Date.now();
-totalDuration=remainingTime;
+// 시작 시간 재설정 (이어가기 기준)
+startTime = Date.now() - (totalDuration - remainingTime);
 
-startGauge(remainingTime);
+// 게이지 이어서 시작
+startGauge(totalDuration);
 
 autoTimer=setTimeout(()=>{
 autoNext();
@@ -451,6 +454,9 @@ if(paused) return;
 let elapsed=Date.now()-startTime;
 let percent=100-(elapsed/duration)*100;
 
+if(percent < 0) percent = 0;
+if(percent > 100) percent = 100;
+
 bar.style.width=percent+"%";
 
 if(percent<=0){
@@ -458,8 +464,6 @@ clearInterval(gaugeTimer);
 }
 
 },50);
-
-}
 
 function saveScript(){
 localStorage.setItem("script",document.getElementById("scriptInput").value);
