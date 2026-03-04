@@ -362,9 +362,13 @@ synth.speak(utter);
 
 function showLine(){
 
+if(index<0)index=0;
+if(index>=lines.length)index=0;
+
 let line=lines[index];
 let display=document.getElementById("display");
 
+// 지문이면
 if(line.type==="direction"){
 
 display.innerText="[지문] "+line.text;
@@ -377,23 +381,13 @@ if(autoMode && !paused) autoNext();
 return;
 }
 
-if(line.role===role){
-
-display.innerText="<내 차례>";
-display.className="display mine";
-
-if(autoMode && !paused) autoNext();
-
-}else{
-
+// 모든 대사 그냥 표시
 display.innerText=line.text;
 display.className="display";
 
 speak(line.text,()=>{
 if(autoMode && !paused) autoNext();
 });
-
-}
 
 }
 
@@ -420,15 +414,24 @@ return;
 }
 
 function nextLine(){
+
 parseScript();
-index=(index+1)%lines.length;
+
+index++;
+
+if(index>=lines.length) index=0;
+
 showLine();
 }
 
 function prevLine(){
+
 parseScript();
+
 index--;
+
 if(index<0) index=lines.length-1;
+
 showLine();
 }
 
