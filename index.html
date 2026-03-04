@@ -2,281 +2,656 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>대사 연습</title>
-
+<title>대본 연습</title>
 <style>
-body {
-  margin: 0;
-  background: #111;
-  color: white;
-  font-family: sans-serif;
+
+.direction{
+color:gold;
+font-weight:bold;
+}
+  
+body{
+margin:0;
+background:#1a1a1a;
+color:white;
+font-family:Arial;
 }
 
-.container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
+.banner{
+width:100%;
+max-width:900px;
+margin:0 auto 20px auto;
+border-radius:10px;
+overflow:hidden;
 }
 
-.topbar {
-  padding: 10px;
-  background: #222;
-  display: flex;
-  gap: 5px;
+.banner img{
+width:100%;
+height:auto;
+display:block;
 }
 
-.script-area {
-  flex: 1;
-  overflow-y: auto;
-  padding: 15px;
-  font-size: 18px;
-  line-height: 1.6;
+.container{
+max-width:900px;
+margin:auto;
+padding:20px;
 }
 
-.controls {
-  padding: 10px;
-  background: #222;
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
+.section{
+background:#2a2a2a;
+padding:15px;
+border-radius:10px;
+margin-bottom:15px;
 }
 
-button {
-  flex: 1;
-  padding: 12px;
-  font-size: 16px;
-  border: none;
-  background: #444;
-  color: white;
-  border-radius: 8px;
-}
-
-button:active {
-  background: #666;
-}
-
-textarea {
-  width: 100%;
-  height: 150px;
-  background: #000;
-  color: white;
-  border: none;
-  padding: 10px;
-}
-
-/* 역할 색상 */
-.mine {
-  color: #00ff88;
-}
-
-.other {
-  color: white;
-}
-
-.direction {
-  color: yellow;
-}
-
-/* 모바일 최적화 */
-@media (max-width:768px){
-
-.script-area{
-  font-size:20px;
-}
-
-button{
-  font-size:18px;
-  padding:14px;
+.scriptBox{
+background:#f5f5f5;
+color:black;
+padding:20px;
+border-radius:10px;
+margin-bottom:15px;
 }
 
 textarea{
-  height:120px;
+width:100%;
+height:260px;
+font-size:16px;
+background:white;
+color:black;
 }
 
+.display{
+background:#111;
+padding:20px;
+border-radius:10px;
+min-height:70px;
+margin-bottom:10px;
+font-size:20px;
+}
+
+.gauge{
+height:14px;
+background:#333;
+margin-top:10px;
+border-radius:6px;
+overflow:hidden;
+}
+
+.gaugeBar{
+height:100%;
+width:100%;
+background:gold;
+}
+
+.fullBtn{
+width:100%;
+background:#777;
+color:white;
+font-size:26px;
+padding:18px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+margin-bottom:10px;
+}
+
+.pauseBtn{
+width:100%;
+background:#c0392b;
+color:white;
+font-size:22px;
+padding:15px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+margin-bottom:10px;
+display:none;
+}
+
+.resumeBtn{
+width:100%;
+background:#27ae60;
+color:white;
+font-size:22px;
+padding:15px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+margin-bottom:10px;
+display:none;
+}
+
+.row{
+display:flex;
+gap:10px;
+}
+
+.yellowBtn{
+background:gold;
+color:black;
+font-size:20px;
+padding:15px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+flex:1;
+}
+
+.autoOff{
+background:red;
+color:white;
+font-size:20px;
+padding:15px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+flex:1;
+}
+
+.autoOn{
+background:green;
+color:white;
+font-size:20px;
+padding:15px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+flex:1;
+}
+
+.small{
+padding:6px 10px;
+font-size:14px;
 }
 </style>
 </head>
 
 <body>
 
+<div class="banner">
+<img src="banner.png">
+</div>
+
 <div class="container">
 
-<div class="topbar">
-<button onclick="saveScript()">저장</button>
-<button onclick="loadScript()">불러오기</button>
-<button onclick="deleteScript()">삭제</button>
+<div class="section">
+역할:
+<input id="roleInput" placeholder="예: 종대">
+
+<br><br>
+
+음성:
+<select id="voiceSelect">
+<option value="male">남자</option>
+<option value="female">여자</option>
+</select>
+
+속도:
+<input type="range" min="0.5" max="2" step="0.1" value="1" id="speed">
+<span id="speedVal">1</span>
 </div>
 
-<textarea id="scriptInput" placeholder="대본 입력
-
-혁: 안녕
-안나: 반가워
-[지문] 문을 열고 들어온다"></textarea>
-
-<div id="scriptView" class="script-area"></div>
-
-<div class="controls">
-<button onclick="startPractice()">시작</button>
-<button onclick="showMine()">내 대사보기</button>
+<div class="scriptBox">
+대본:
+<textarea id="scriptInput">
+종대: 니 지금 뭐하냐?!
+문이 천천히 열린다
+한별: 아무것도 안했는데요
+잠시 정적이 흐른다
+종대: 거짓말하지 마라
+한별: 거짓말?! 나보다 어려 보이는 고만..확!
+</textarea>
 </div>
+
+<div class="display" id="display">
+&lt;상대 대사&gt;
+</div>
+
+<div class="gauge">
+<div class="gaugeBar" id="gaugeBar"></div>
+</div>
+
+<button class="fullBtn" onclick="startPractice()">
+연습 시작
+</button>
+
+<button id="pauseBtn" class="pauseBtn" onclick="pauseAuto()">
+⏸ 일시정지
+</button>
+
+<button id="resumeBtn" class="resumeBtn" onclick="resumeAuto()">
+▶ 다시하기
+</button>
+
+<button class="fullBtn" onclick="showMyLine()">
+내 대사 보기
+</button>
+
+<div class="row">
+<button class="yellowBtn" onclick="prevLine()">이전</button>
+<button id="autoBtn" class="autoOff" onclick="toggleAuto()">자동연습 OFF</button>
+<button class="yellowBtn" onclick="nextLine()">다음</button>
+</div>
+
+<br>
+저장 이름:
+<input id="saveName" placeholder="예: 오디션1">
+
+비밀번호:
+<input id="savePass" type="password" maxlength="4" placeholder="4자리">
+
+<br><br>
+
+<button class="small" onclick="saveScript()">💾 저장</button>
+<button class="small" onclick="loadScript()">📂 불러오기</button>
+<button class="small" onclick="deleteScript()">🗑 삭제</button>
+
+<br><br>
+
+<select id="saveList" style="width:100%; padding:8px;"></select>
+
+<br><br>
+
+연습횟수:
+<span id="count">0</span>
 
 </div>
 
 <script>
 
-let scripts = JSON.parse(localStorage.getItem("scripts") || "{}");
-let mineVisible = false;
+let lines=[];
+let index=0;
+let role="";
+let autoMode=false;
+let paused=false;
 
-function parseScript(text){
+let gaugeTimer=null;
+let autoTimer=null;
 
-  let lines = text.split("\n");
-  let html = "";
+let totalDuration=0;
+let remainingTime=0;
+let startTime=0;
 
-  for(let line of lines){
+const synth=window.speechSynthesis;
 
-    if(line.startsWith("[지문]")){
-      html += `<div class="direction">${line}</div>`;
-    }
+function parseScript(){
 
-    else if(line.startsWith("혁:")){
-      let cls = mineVisible ? "mine" : "other";
-      html += `<div class="${cls}">${line}</div>`;
-    }
+role=document.getElementById("roleInput").value.trim();
 
-    else if(line.startsWith("안나:")){
-      html += `<div class="other">${line}</div>`;
-    }
+lines=document.getElementById("scriptInput").value
+.split("\n")
+.map(l=>{
 
-    else{
-      html += `<div>${line}</div>`;
-    }
-  }
+l=l.trim();
 
-  return html;
+if(!l) return null;
+
+if(l.includes(":")){
+let p=l.split(":");
+return {
+role:p[0].trim(),
+text:p[1].trim(),
+type:"dialogue"
+};
+}else{
+return {
+role:"direction",
+text:l,
+type:"direction"
+};
+}
+
+})
+.filter(l=>l!==null);
+
+}
+
+function getVoice(){
+
+let voices=synth.getVoices();
+
+let gender=document.getElementById("voiceSelect").value;
+
+if(gender==="male"){
+return voices.find(v=>v.lang.includes("ko")) || voices[0];
+}else{
+return voices.find(v=>v.lang.includes("ko")) || voices[0];
+}
+
+}
+
+function speak(text,callback){
+
+let utter=new SpeechSynthesisUtterance(text);
+
+utter.voice=getVoice();
+utter.lang="ko-KR";
+utter.rate=parseFloat(document.getElementById("speed").value);
+utter.pitch=document.getElementById("voiceSelect").value==="male"?0.7:1.3;
+
+utter.onend=callback;
+
+synth.cancel();
+synth.speak(utter);
+
+}
+
+function showLine(){
+
+if(index<0)index=0;
+if(index>=lines.length)index=0;
+
+let line=lines[index];
+let display=document.getElementById("display");
+
+// 지문이면
+if(line.type==="direction"){
+
+display.innerText="[지문] "+line.text;
+display.className="display direction";
+
+speak(line.text,()=>{
+if(autoMode && !paused) autoNext();
+});
+
+return;
+}
+
+// 내 대사
+if(line.role===role){
+display.innerText="<내 차례>";
+display.className="display";
+if(autoMode && !paused) autoNext();
+}else{
+display.innerText=line.text;
+display.className="display";
+
+speak(line.text,()=>{
+if(autoMode && !paused) autoNext();
+});
+}
+
+}
+
+function showMyLine(){
+
+parseScript();
+
+for(let i=index;i<lines.length;i++){
+if(lines[i].role===role){
+document.getElementById("display").innerText=lines[i].text;
+return;
+}
+}
+
+for(let i=0;i<index;i++){
+if(lines[i].role===role){
+document.getElementById("display").innerText=lines[i].text;
+return;
+}
+}
+
+}
+
+function nextLine(){
+
+parseScript();
+
+do{
+index++;
+if(index>=lines.length) index=0;
+}while(lines[index].role===role);
+
+showLine();
+}
+
+function prevLine(){
+
+parseScript();
+
+do{
+index--;
+if(index<0) index=lines.length-1;
+}while(lines[index].role===role);
+
+showLine();
 }
 
 function startPractice(){
-
-  let text = document.getElementById("scriptInput").value;
-  document.getElementById("scriptView").innerHTML = parseScript(text);
-
-  speakScript(text);
+parseScript();
+index=0;
+showLine();
 }
 
-function showMine(){
+function toggleAuto(){
 
-  mineVisible = !mineVisible;
+autoMode=!autoMode;
+let btn=document.getElementById("autoBtn");
 
-  let text = document.getElementById("scriptInput").value;
-  document.getElementById("scriptView").innerHTML = parseScript(text);
+if(autoMode){
+btn.className="autoOn";
+btn.innerText="자동연습 ON";
+document.getElementById("pauseBtn").style.display="block";
+startPractice();
+}else{
+stopAuto();
 }
 
-function speakScript(text){
-
-  let lines = text.split("\n");
-
-  let index = 0;
-
-  function next(){
-
-    if(index >= lines.length) return;
-
-    let line = lines[index];
-    index++;
-
-    let msg = new SpeechSynthesisUtterance();
-
-    if(line.startsWith("혁:")){
-      next();
-      return;
-    }
-
-    if(line.startsWith("안나:")){
-      msg.text = line.replace("안나:", "");
-      msg.lang = "ko-KR";
-    }
-
-    else if(line.startsWith("[지문]")){
-      msg.text = line.replace("[지문]", "");
-      msg.lang = "ko-KR";
-    }
-
-    else{
-      next();
-      return;
-    }
-
-    msg.onend = next;
-    speechSynthesis.speak(msg);
-  }
-
-  next();
 }
 
+function pauseAuto(){
+
+paused=true;
+
+clearTimeout(autoTimer);
+clearInterval(gaugeTimer);
+
+remainingTime = totalDuration - (Date.now()-startTime);
+
+document.getElementById("pauseBtn").style.display="none";
+document.getElementById("resumeBtn").style.display="block";
+
+}
+
+function resumeAuto(){
+
+paused=false;
+
+startTime = Date.now() - (totalDuration - remainingTime);
+
+startGauge(totalDuration);
+
+autoTimer=setTimeout(()=>{
+autoNext();
+},remainingTime);
+
+document.getElementById("pauseBtn").style.display="block";
+document.getElementById("resumeBtn").style.display="none";
+
+}
+
+function stopAuto(){
+
+autoMode=false;
+paused=false;
+
+document.getElementById("autoBtn").className="autoOff";
+document.getElementById("autoBtn").innerText="자동연습 OFF";
+
+document.getElementById("pauseBtn").style.display="none";
+document.getElementById("resumeBtn").style.display="none";
+
+clearTimeout(autoTimer);
+clearInterval(gaugeTimer);
+
+document.getElementById("display").innerText="<상대 대사>";
+document.getElementById("gaugeBar").style.width="100%";
+
+}
+
+function autoNext(){
+
+if(!autoMode || paused) return;
+
+index++;
+
+if(index>=lines.length){
+stopAuto();
+return;
+}
+
+let line=lines[index];
+
+if(line.role===role){
+
+let duration=(line.text.length*80)+4000; // 2초 빠르게
+
+totalDuration=duration;
+remainingTime=duration;
+startTime=Date.now();
+
+startGauge(duration);
+
+autoTimer=setTimeout(()=>{
+autoNext();
+},duration);
+
+}else{
+showLine();
+}
+
+}
+
+function startGauge(duration){
+
+let bar=document.getElementById("gaugeBar");
+
+clearInterval(gaugeTimer);
+
+gaugeTimer=setInterval(()=>{
+
+let elapsed=Date.now()-startTime;
+let percent=100-(elapsed/duration)*100;
+
+if(percent<0) percent=0;
+if(percent>100) percent=100;
+
+bar.style.width=percent+"%";
+
+if(percent<=0){
+clearInterval(gaugeTimer);
+}
+
+},50);
+
+}
+
+function updateSaveList(){
+
+let list=document.getElementById("saveList");
+list.innerHTML="";
+
+for(let i=0;i<localStorage.length;i++){
+
+let key=localStorage.key(i);
+
+if(key.startsWith("script_")){
+
+let name=key.replace("script_","");
+
+let option=document.createElement("option");
+option.value=name;
+option.text=name;
+
+list.appendChild(option);
+
+}
+
+}
+
+}
+
+// 저장
 function saveScript(){
 
-  let name = prompt("저장 이름");
-  if(!name) return;
+let name=document.getElementById("saveName").value.trim();
+let pass=document.getElementById("savePass").value.trim();
 
-  let pass = prompt("비밀번호 4자리");
-  if(!pass) return;
-
-  let text = document.getElementById("scriptInput").value;
-
-  scripts[name] = {
-    pass: pass,
-    text: text
-  };
-
-  localStorage.setItem("scripts", JSON.stringify(scripts));
-
-  alert("저장됨");
+if(name===""){
+alert("이름 입력");
+return;
 }
 
+if(pass.length!==4){
+alert("비밀번호 4자리");
+return;
+}
+
+let data={
+script:document.getElementById("scriptInput").value,
+role:document.getElementById("roleInput").value,
+pass:pass
+};
+
+localStorage.setItem("script_"+name,JSON.stringify(data));
+
+updateSaveList();
+
+alert("저장됨");
+
+}
+
+// 불러오기
 function loadScript(){
 
-  let name = prompt("불러올 이름");
-  if(!name) return;
+let name=document.getElementById("saveList").value;
 
-  if(!scripts[name]){
-    alert("없음");
-    return;
-  }
+if(!name) return;
 
-  let pass = prompt("비밀번호");
+let inputPass=prompt("비밀번호 입력");
 
-  if(scripts[name].pass != pass){
-    alert("비번 틀림");
-    return;
-  }
+let data=JSON.parse(localStorage.getItem("script_"+name));
 
-  document.getElementById("scriptInput").value = scripts[name].text;
+if(inputPass!==data.pass){
+alert("비밀번호 틀림");
+return;
 }
 
+document.getElementById("scriptInput").value=data.script;
+document.getElementById("roleInput").value=data.role;
+
+alert("불러옴");
+
+}
+
+// 삭제
 function deleteScript(){
 
-  let name = prompt("삭제 이름");
-  if(!name) return;
+let name=document.getElementById("saveList").value;
 
-  if(!scripts[name]){
-    alert("없음");
-    return;
-  }
+if(!name) return;
 
-  let pass = prompt("비밀번호 (없으면 그냥 엔터)");
+let inputPass=prompt("비밀번호 입력");
 
-  if(scripts[name].pass && scripts[name].pass != pass){
-    alert("비번 틀림");
-    return;
-  }
+let data=JSON.parse(localStorage.getItem("script_"+name));
 
-  delete scripts[name];
-  localStorage.setItem("scripts", JSON.stringify(scripts));
-
-  alert("삭제됨");
+if(inputPass!==data.pass){
+alert("비밀번호 틀림");
+return;
 }
 
+localStorage.removeItem("script_"+name);
+
+updateSaveList();
+
+alert("삭제됨");
+
+}
+
+// 시작시 목록 표시
+window.onload=function(){
+updateSaveList();
+}
 </script>
 
 </body>
