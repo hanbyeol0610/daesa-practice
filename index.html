@@ -9,6 +9,11 @@
 color:gold;
 font-weight:bold;
 }
+
+.myLine{
+color:#00ff88;
+font-weight:bold;
+}
   
 body{
 margin:0;
@@ -193,39 +198,23 @@ font-size:14px;
 
 <div class="scriptBox">
 대본:
-<textarea id="scriptInput">
-종대: 니 지금 뭐하냐?!
-문이 천천히 열린다
-한별: 아무것도 안했는데요
-잠시 정적이 흐른다
-종대: 거짓말하지 마라
-한별: 거짓말?! 나보다 어려 보이는 고만..확!
-</textarea>
+<textarea id="scriptInput"></textarea>
 </div>
 
-<div class="display" id="display">
+<div id="display" class="display">
 &lt;상대 대사&gt;
 </div>
 
 <div class="gauge">
-<div class="gaugeBar" id="gaugeBar"></div>
+<div id="gaugeBar" class="gaugeBar"></div>
 </div>
 
-<button class="fullBtn" onclick="startPractice()">
-연습 시작
-</button>
+<button class="fullBtn" onclick="startPractice()">연습 시작</button>
 
-<button id="pauseBtn" class="pauseBtn" onclick="pauseAuto()">
-⏸ 일시정지
-</button>
+<button id="pauseBtn" class="pauseBtn" onclick="pauseAuto()">⏸ 일시정지</button>
+<button id="resumeBtn" class="resumeBtn" onclick="resumeAuto()">▶ 다시하기</button>
 
-<button id="resumeBtn" class="resumeBtn" onclick="resumeAuto()">
-▶ 다시하기
-</button>
-
-<button class="fullBtn" onclick="showMyLine()">
-내 대사 보기
-</button>
+<button class="fullBtn" onclick="showMyLine()">내 대사 보기</button>
 
 <div class="row">
 <button class="yellowBtn" onclick="prevLine()">이전</button>
@@ -234,23 +223,6 @@ font-size:14px;
 </div>
 
 <br>
-저장 이름:
-<input id="saveName" placeholder="예: 오디션1">
-
-비밀번호:
-<input id="savePass" type="password" maxlength="4" placeholder="4자리">
-
-<br><br>
-
-<button class="small" onclick="saveScript()">💾 저장</button>
-<button class="small" onclick="loadScript()">📂 불러오기</button>
-<button class="small" onclick="deleteScript()">🗑 삭제</button>
-
-<br><br>
-
-<select id="saveList" style="width:100%; padding:8px;"></select>
-
-<br><br>
 
 연습횟수:
 <span id="count">0</span>
@@ -283,22 +255,13 @@ lines=document.getElementById("scriptInput").value
 .map(l=>{
 
 l=l.trim();
-
 if(!l) return null;
 
 if(l.includes(":")){
 let p=l.split(":");
-return {
-role:p[0].trim(),
-text:p[1].trim(),
-type:"dialogue"
-};
+return {role:p[0].trim(),text:p[1].trim(),type:"dialogue"};
 }else{
-return {
-role:"direction",
-text:l,
-type:"direction"
-};
+return {role:"direction",text:l,type:"direction"};
 }
 
 })
@@ -306,28 +269,12 @@ type:"direction"
 
 }
 
-function getVoice(){
-
-let voices=synth.getVoices();
-
-let gender=document.getElementById("voiceSelect").value;
-
-if(gender==="male"){
-return voices.find(v=>v.lang.includes("ko")) || voices[0];
-}else{
-return voices.find(v=>v.lang.includes("ko")) || voices[0];
-}
-
-}
-
 function speak(text,callback){
 
 let utter=new SpeechSynthesisUtterance(text);
 
-utter.voice=getVoice();
 utter.lang="ko-KR";
 utter.rate=parseFloat(document.getElementById("speed").value);
-utter.pitch=document.getElementById("voiceSelect").value==="male"?0.7:1.3;
 
 utter.onend=callback;
 
@@ -338,15 +285,10 @@ synth.speak(utter);
 
 function showLine(){
 
-if(index<0)index=0;
-if(index>=lines.length)index=0;
-
 let line=lines[index];
 let display=document.getElementById("display");
 
-// 지문이면
 if(line.type==="direction"){
-
 display.innerText="[지문] "+line.text;
 display.className="display direction";
 
@@ -357,12 +299,12 @@ if(autoMode && !paused) autoNext();
 return;
 }
 
-// 내 대사
 if(line.role===role){
 display.innerText="<내 차례>";
 display.className="display";
 if(autoMode && !paused) autoNext();
 }else{
+
 display.innerText=line.text;
 display.className="display";
 
@@ -375,18 +317,14 @@ if(autoMode && !paused) autoNext();
 
 function showMyLine(){
 
-parseScript();
-
 for(let i=index;i<lines.length;i++){
 if(lines[i].role===role){
-document.getElementById("display").innerText=lines[i].text;
-return;
-}
-}
 
-for(let i=0;i<index;i++){
-if(lines[i].role===role){
-document.getElementById("display").innerText=lines[i].text;
+let display=document.getElementById("display");
+
+display.innerText=lines[i].text;
+display.className="display myLine";
+
 return;
 }
 }
@@ -394,8 +332,6 @@ return;
 }
 
 function nextLine(){
-
-parseScript();
 
 do{
 index++;
@@ -406,8 +342,6 @@ showLine();
 }
 
 function prevLine(){
-
-parseScript();
 
 do{
 index--;
@@ -484,7 +418,6 @@ document.getElementById("resumeBtn").style.display="none";
 clearTimeout(autoTimer);
 clearInterval(gaugeTimer);
 
-document.getElementById("display").innerText="<상대 대사>";
 document.getElementById("gaugeBar").style.width="100%";
 
 }
@@ -504,7 +437,7 @@ let line=lines[index];
 
 if(line.role===role){
 
-let duration=(line.text.length*80)+4000; // 2초 빠르게
+let duration=(line.text.length*80)+2000;
 
 totalDuration=duration;
 remainingTime=duration;
@@ -534,7 +467,6 @@ let elapsed=Date.now()-startTime;
 let percent=100-(elapsed/duration)*100;
 
 if(percent<0) percent=0;
-if(percent>100) percent=100;
 
 bar.style.width=percent+"%";
 
@@ -546,112 +478,6 @@ clearInterval(gaugeTimer);
 
 }
 
-function updateSaveList(){
-
-let list=document.getElementById("saveList");
-list.innerHTML="";
-
-for(let i=0;i<localStorage.length;i++){
-
-let key=localStorage.key(i);
-
-if(key.startsWith("script_")){
-
-let name=key.replace("script_","");
-
-let option=document.createElement("option");
-option.value=name;
-option.text=name;
-
-list.appendChild(option);
-
-}
-
-}
-
-}
-
-// 저장
-function saveScript(){
-
-let name=document.getElementById("saveName").value.trim();
-let pass=document.getElementById("savePass").value.trim();
-
-if(name===""){
-alert("이름 입력");
-return;
-}
-
-if(pass.length!==4){
-alert("비밀번호 4자리");
-return;
-}
-
-let data={
-script:document.getElementById("scriptInput").value,
-role:document.getElementById("roleInput").value,
-pass:pass
-};
-
-localStorage.setItem("script_"+name,JSON.stringify(data));
-
-updateSaveList();
-
-alert("저장됨");
-
-}
-
-// 불러오기
-function loadScript(){
-
-let name=document.getElementById("saveList").value;
-
-if(!name) return;
-
-let inputPass=prompt("비밀번호 입력");
-
-let data=JSON.parse(localStorage.getItem("script_"+name));
-
-if(inputPass!==data.pass){
-alert("비밀번호 틀림");
-return;
-}
-
-document.getElementById("scriptInput").value=data.script;
-document.getElementById("roleInput").value=data.role;
-
-alert("불러옴");
-
-}
-
-// 삭제
-function deleteScript(){
-
-let name=document.getElementById("saveList").value;
-
-if(!name) return;
-
-let inputPass=prompt("비밀번호 입력");
-
-let data=JSON.parse(localStorage.getItem("script_"+name));
-
-if(inputPass!==data.pass){
-alert("비밀번호 틀림");
-return;
-}
-
-localStorage.removeItem("script_"+name);
-
-updateSaveList();
-
-alert("삭제됨");
-
-}
-
-// 시작시 목록 표시
-window.onload=function(){
-updateSaveList();
-}
 </script>
 
 </body>
