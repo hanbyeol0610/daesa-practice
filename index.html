@@ -227,7 +227,20 @@ font-size:14px;
 </div>
 
 <br>
+저장 이름:
+<input id="saveName" placeholder="예: 오디션1">
 
+<br><br>
+
+<button class="small" onclick="saveScriptMulti()">💾 여러개 저장</button>
+<button class="small" onclick="loadScriptMulti()">📂 선택 불러오기</button>
+<button class="small" onclick="deleteScript()">🗑 삭제</button>
+
+<br><br>
+
+<select id="saveList" style="width:100%; padding:8px;"></select>
+
+<br>
 <button class="small" onclick="saveScript()">💾 저장</button>
 <button class="small" onclick="loadScript()">📂 불러오기</button>
 
@@ -502,7 +515,89 @@ alert("불러옴");
 document.getElementById("speed").oninput=function(){
 document.getElementById("speedVal").innerText=this.value;
 }
+function updateSaveList(){
 
+let list=document.getElementById("saveList");
+list.innerHTML="";
+
+for(let i=0;i<localStorage.length;i++){
+
+let key=localStorage.key(i);
+
+if(key.startsWith("script_")){
+
+let name=key.replace("script_","");
+
+let option=document.createElement("option");
+option.value=name;
+option.text=name;
+
+list.appendChild(option);
+
+}
+
+}
+
+}
+
+// 여러개 저장
+function saveScriptMulti(){
+
+let name=document.getElementById("saveName").value.trim();
+
+if(name===""){
+alert("이름 입력");
+return;
+}
+
+let data={
+script:document.getElementById("scriptInput").value,
+role:document.getElementById("roleInput").value
+};
+
+localStorage.setItem("script_"+name,JSON.stringify(data));
+
+updateSaveList();
+
+alert("저장됨");
+
+}
+
+// 선택 불러오기
+function loadScriptMulti(){
+
+let name=document.getElementById("saveList").value;
+
+if(!name) return;
+
+let data=JSON.parse(localStorage.getItem("script_"+name));
+
+document.getElementById("scriptInput").value=data.script;
+document.getElementById("roleInput").value=data.role;
+
+alert("불러옴");
+
+}
+
+// 삭제
+function deleteScript(){
+
+let name=document.getElementById("saveList").value;
+
+if(!name) return;
+
+localStorage.removeItem("script_"+name);
+
+updateSaveList();
+
+alert("삭제됨");
+
+}
+
+// 시작할때 목록 불러오기
+window.onload=function(){
+updateSaveList();
+}
 </script>
 
 </body>
