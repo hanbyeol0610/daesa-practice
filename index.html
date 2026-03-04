@@ -2,480 +2,279 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>대본 연습</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>대사 연습</title>
+
 <style>
-
-.direction{
-color:gold;
-font-weight:bold;
+body {
+  margin: 0;
+  background: #111;
+  color: white;
+  font-family: sans-serif;
 }
 
-.myLine{
-color:#00ff88;
-font-weight:bold;
-}
-  
-body{
-margin:0;
-background:#1a1a1a;
-color:white;
-font-family:Arial;
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
-.banner{
-width:100%;
-max-width:900px;
-margin:0 auto 20px auto;
-border-radius:10px;
-overflow:hidden;
+.topbar {
+  padding: 10px;
+  background: #222;
+  display: flex;
+  gap: 5px;
 }
 
-.banner img{
-width:100%;
-height:auto;
-display:block;
+.script-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+  font-size: 18px;
+  line-height: 1.6;
 }
 
-.container{
-max-width:900px;
-margin:auto;
-padding:20px;
+.controls {
+  padding: 10px;
+  background: #222;
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
 }
 
-.section{
-background:#2a2a2a;
-padding:15px;
-border-radius:10px;
-margin-bottom:15px;
+button {
+  flex: 1;
+  padding: 12px;
+  font-size: 16px;
+  border: none;
+  background: #444;
+  color: white;
+  border-radius: 8px;
 }
 
-.scriptBox{
-background:#f5f5f5;
-color:black;
-padding:20px;
-border-radius:10px;
-margin-bottom:15px;
+button:active {
+  background: #666;
+}
+
+textarea {
+  width: 100%;
+  height: 150px;
+  background: #000;
+  color: white;
+  border: none;
+  padding: 10px;
+}
+
+/* 역할 색상 */
+.mine {
+  color: #00ff88;
+}
+
+.other {
+  color: white;
+}
+
+.direction {
+  color: yellow;
+}
+
+/* 모바일 최적화 */
+@media (max-width:768px){
+
+.script-area{
+  font-size:20px;
+}
+
+button{
+  font-size:18px;
+  padding:14px;
 }
 
 textarea{
-width:100%;
-height:260px;
-font-size:16px;
-background:white;
-color:black;
+  height:120px;
 }
 
-.display{
-background:#111;
-padding:20px;
-border-radius:10px;
-min-height:70px;
-margin-bottom:10px;
-font-size:20px;
-}
-
-.gauge{
-height:14px;
-background:#333;
-margin-top:10px;
-border-radius:6px;
-overflow:hidden;
-}
-
-.gaugeBar{
-height:100%;
-width:100%;
-background:gold;
-}
-
-.fullBtn{
-width:100%;
-background:#777;
-color:white;
-font-size:26px;
-padding:18px;
-border:none;
-border-radius:8px;
-cursor:pointer;
-margin-bottom:10px;
-}
-
-.pauseBtn{
-width:100%;
-background:#c0392b;
-color:white;
-font-size:22px;
-padding:15px;
-border:none;
-border-radius:8px;
-cursor:pointer;
-margin-bottom:10px;
-display:none;
-}
-
-.resumeBtn{
-width:100%;
-background:#27ae60;
-color:white;
-font-size:22px;
-padding:15px;
-border:none;
-border-radius:8px;
-cursor:pointer;
-margin-bottom:10px;
-display:none;
-}
-
-.row{
-display:flex;
-gap:10px;
-}
-
-.yellowBtn{
-background:gold;
-color:black;
-font-size:20px;
-padding:15px;
-border:none;
-border-radius:8px;
-cursor:pointer;
-flex:1;
-}
-
-.autoOff{
-background:red;
-color:white;
-font-size:20px;
-padding:15px;
-border:none;
-border-radius:8px;
-cursor:pointer;
-flex:1;
-}
-
-.autoOn{
-background:green;
-color:white;
-font-size:20px;
-padding:15px;
-border:none;
-border-radius:8px;
-cursor:pointer;
-flex:1;
-}
-
-.small{
-padding:6px 10px;
-font-size:14px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="banner">
-<img src="banner.png">
-</div>
-
 <div class="container">
 
-<div class="section">
-역할:
-<input id="roleInput" placeholder="예: 종대">
-
-<br><br>
-
-음성:
-<select id="voiceSelect">
-<option value="male">남자</option>
-<option value="female">여자</option>
-</select>
-
-속도:
-<input type="range" min="0.5" max="2" step="0.1" value="1" id="speed">
-<span id="speedVal">1</span>
+<div class="topbar">
+<button onclick="saveScript()">저장</button>
+<button onclick="loadScript()">불러오기</button>
+<button onclick="deleteScript()">삭제</button>
 </div>
 
-<div class="scriptBox">
-대본:
-<textarea id="scriptInput"></textarea>
+<textarea id="scriptInput" placeholder="대본 입력
+
+혁: 안녕
+안나: 반가워
+[지문] 문을 열고 들어온다"></textarea>
+
+<div id="scriptView" class="script-area"></div>
+
+<div class="controls">
+<button onclick="startPractice()">시작</button>
+<button onclick="showMine()">내 대사보기</button>
 </div>
-
-<div id="display" class="display">
-&lt;상대 대사&gt;
-</div>
-
-<div class="gauge">
-<div id="gaugeBar" class="gaugeBar"></div>
-</div>
-
-<button class="fullBtn" onclick="startPractice()">연습 시작</button>
-
-<button id="pauseBtn" class="pauseBtn" onclick="pauseAuto()">⏸ 일시정지</button>
-<button id="resumeBtn" class="resumeBtn" onclick="resumeAuto()">▶ 다시하기</button>
-
-<button class="fullBtn" onclick="showMyLine()">내 대사 보기</button>
-
-<div class="row">
-<button class="yellowBtn" onclick="prevLine()">이전</button>
-<button id="autoBtn" class="autoOff" onclick="toggleAuto()">자동연습 OFF</button>
-<button class="yellowBtn" onclick="nextLine()">다음</button>
-</div>
-
-<br>
-
-연습횟수:
-<span id="count">0</span>
 
 </div>
 
 <script>
 
-let lines=[];
-let index=0;
-let role="";
-let autoMode=false;
-let paused=false;
+let scripts = JSON.parse(localStorage.getItem("scripts") || "{}");
+let mineVisible = false;
 
-let gaugeTimer=null;
-let autoTimer=null;
+function parseScript(text){
 
-let totalDuration=0;
-let remainingTime=0;
-let startTime=0;
+  let lines = text.split("\n");
+  let html = "";
 
-const synth=window.speechSynthesis;
+  for(let line of lines){
 
-function parseScript(){
+    if(line.startsWith("[지문]")){
+      html += `<div class="direction">${line}</div>`;
+    }
 
-role=document.getElementById("roleInput").value.trim();
+    else if(line.startsWith("혁:")){
+      let cls = mineVisible ? "mine" : "other";
+      html += `<div class="${cls}">${line}</div>`;
+    }
 
-lines=document.getElementById("scriptInput").value
-.split("\n")
-.map(l=>{
+    else if(line.startsWith("안나:")){
+      html += `<div class="other">${line}</div>`;
+    }
 
-l=l.trim();
-if(!l) return null;
+    else{
+      html += `<div>${line}</div>`;
+    }
+  }
 
-if(l.includes(":")){
-let p=l.split(":");
-return {role:p[0].trim(),text:p[1].trim(),type:"dialogue"};
-}else{
-return {role:"direction",text:l,type:"direction"};
-}
-
-})
-.filter(l=>l!==null);
-
-}
-
-function speak(text,callback){
-
-let utter=new SpeechSynthesisUtterance(text);
-
-utter.lang="ko-KR";
-utter.rate=parseFloat(document.getElementById("speed").value);
-
-utter.onend=callback;
-
-synth.cancel();
-synth.speak(utter);
-
-}
-
-function showLine(){
-
-let line=lines[index];
-let display=document.getElementById("display");
-
-if(line.type==="direction"){
-display.innerText="[지문] "+line.text;
-display.className="display direction";
-
-speak(line.text,()=>{
-if(autoMode && !paused) autoNext();
-});
-
-return;
-}
-
-if(line.role===role){
-display.innerText="<내 차례>";
-display.className="display";
-if(autoMode && !paused) autoNext();
-}else{
-
-display.innerText=line.text;
-display.className="display";
-
-speak(line.text,()=>{
-if(autoMode && !paused) autoNext();
-});
-}
-
-}
-
-function showMyLine(){
-
-for(let i=index;i<lines.length;i++){
-if(lines[i].role===role){
-
-let display=document.getElementById("display");
-
-display.innerText=lines[i].text;
-display.className="display myLine";
-
-return;
-}
-}
-
-}
-
-function nextLine(){
-
-do{
-index++;
-if(index>=lines.length) index=0;
-}while(lines[index].role===role);
-
-showLine();
-}
-
-function prevLine(){
-
-do{
-index--;
-if(index<0) index=lines.length-1;
-}while(lines[index].role===role);
-
-showLine();
+  return html;
 }
 
 function startPractice(){
-parseScript();
-index=0;
-showLine();
+
+  let text = document.getElementById("scriptInput").value;
+  document.getElementById("scriptView").innerHTML = parseScript(text);
+
+  speakScript(text);
 }
 
-function toggleAuto(){
+function showMine(){
 
-autoMode=!autoMode;
-let btn=document.getElementById("autoBtn");
+  mineVisible = !mineVisible;
 
-if(autoMode){
-btn.className="autoOn";
-btn.innerText="자동연습 ON";
-document.getElementById("pauseBtn").style.display="block";
-startPractice();
-}else{
-stopAuto();
+  let text = document.getElementById("scriptInput").value;
+  document.getElementById("scriptView").innerHTML = parseScript(text);
 }
 
+function speakScript(text){
+
+  let lines = text.split("\n");
+
+  let index = 0;
+
+  function next(){
+
+    if(index >= lines.length) return;
+
+    let line = lines[index];
+    index++;
+
+    let msg = new SpeechSynthesisUtterance();
+
+    if(line.startsWith("혁:")){
+      next();
+      return;
+    }
+
+    if(line.startsWith("안나:")){
+      msg.text = line.replace("안나:", "");
+      msg.lang = "ko-KR";
+    }
+
+    else if(line.startsWith("[지문]")){
+      msg.text = line.replace("[지문]", "");
+      msg.lang = "ko-KR";
+    }
+
+    else{
+      next();
+      return;
+    }
+
+    msg.onend = next;
+    speechSynthesis.speak(msg);
+  }
+
+  next();
 }
 
-function pauseAuto(){
+function saveScript(){
 
-paused=true;
+  let name = prompt("저장 이름");
+  if(!name) return;
 
-clearTimeout(autoTimer);
-clearInterval(gaugeTimer);
+  let pass = prompt("비밀번호 4자리");
+  if(!pass) return;
 
-remainingTime = totalDuration - (Date.now()-startTime);
+  let text = document.getElementById("scriptInput").value;
 
-document.getElementById("pauseBtn").style.display="none";
-document.getElementById("resumeBtn").style.display="block";
+  scripts[name] = {
+    pass: pass,
+    text: text
+  };
 
+  localStorage.setItem("scripts", JSON.stringify(scripts));
+
+  alert("저장됨");
 }
 
-function resumeAuto(){
+function loadScript(){
 
-paused=false;
+  let name = prompt("불러올 이름");
+  if(!name) return;
 
-startTime = Date.now() - (totalDuration - remainingTime);
+  if(!scripts[name]){
+    alert("없음");
+    return;
+  }
 
-startGauge(totalDuration);
+  let pass = prompt("비밀번호");
 
-autoTimer=setTimeout(()=>{
-autoNext();
-},remainingTime);
+  if(scripts[name].pass != pass){
+    alert("비번 틀림");
+    return;
+  }
 
-document.getElementById("pauseBtn").style.display="block";
-document.getElementById("resumeBtn").style.display="none";
-
+  document.getElementById("scriptInput").value = scripts[name].text;
 }
 
-function stopAuto(){
+function deleteScript(){
 
-autoMode=false;
-paused=false;
+  let name = prompt("삭제 이름");
+  if(!name) return;
 
-document.getElementById("autoBtn").className="autoOff";
-document.getElementById("autoBtn").innerText="자동연습 OFF";
+  if(!scripts[name]){
+    alert("없음");
+    return;
+  }
 
-document.getElementById("pauseBtn").style.display="none";
-document.getElementById("resumeBtn").style.display="none";
+  let pass = prompt("비밀번호 (없으면 그냥 엔터)");
 
-clearTimeout(autoTimer);
-clearInterval(gaugeTimer);
+  if(scripts[name].pass && scripts[name].pass != pass){
+    alert("비번 틀림");
+    return;
+  }
 
-document.getElementById("gaugeBar").style.width="100%";
+  delete scripts[name];
+  localStorage.setItem("scripts", JSON.stringify(scripts));
 
-}
-
-function autoNext(){
-
-if(!autoMode || paused) return;
-
-index++;
-
-if(index>=lines.length){
-stopAuto();
-return;
-}
-
-let line=lines[index];
-
-if(line.role===role){
-
-let duration=(line.text.length*80)+2000;
-
-totalDuration=duration;
-remainingTime=duration;
-startTime=Date.now();
-
-startGauge(duration);
-
-autoTimer=setTimeout(()=>{
-autoNext();
-},duration);
-
-}else{
-showLine();
-}
-
-}
-
-function startGauge(duration){
-
-let bar=document.getElementById("gaugeBar");
-
-clearInterval(gaugeTimer);
-
-gaugeTimer=setInterval(()=>{
-
-let elapsed=Date.now()-startTime;
-let percent=100-(elapsed/duration)*100;
-
-if(percent<0) percent=0;
-
-bar.style.width=percent+"%";
-
-if(percent<=0){
-clearInterval(gaugeTimer);
-}
-
-},50);
-
+  alert("삭제됨");
 }
 
 </script>
