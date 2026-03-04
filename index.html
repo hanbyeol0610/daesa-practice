@@ -22,6 +22,7 @@ overflow:hidden;
 
 .banner img{
 width:100%;
+height:auto;
 display:block;
 }
 
@@ -50,6 +51,8 @@ textarea{
 width:100%;
 height:260px;
 font-size:16px;
+background:white;
+color:black;
 }
 
 .display{
@@ -179,7 +182,7 @@ font-size:14px;
 </select>
 
 속도:
-<input type="range" min="0.7" max="1.3" step="0.1" value="1" id="speed">
+<input type="range" min="0.5" max="2" step="0.1" value="1" id="speed">
 <span id="speedVal">1</span>
 </div>
 
@@ -228,17 +231,14 @@ font-size:14px;
 <button class="small" onclick="saveScript()">💾 저장</button>
 <button class="small" onclick="loadScript()">📂 불러오기</button>
 
+<br><br>
+
+연습횟수:
+<span id="count">0</span>
+
 </div>
 
 <script>
-
-const API_KEY = "여기에_API키";
-
-// ElevenLabs Voice ID
-const VOICE_MALE = "HyukVoiceID";
-const VOICE_FEMALE = "AnnaKimVoiceID";
-
-let audioPlayer = new Audio();
 
 let lines=[];
 let index=0;
@@ -253,6 +253,8 @@ let totalDuration=0;
 let remainingTime=0;
 let startTime=0;
 
+const synth=window.speechSynthesis;
+
 function parseScript(){
 role=document.getElementById("roleInput").value.trim();
 lines=document.getElementById("scriptInput").value
@@ -263,40 +265,40 @@ return { role:p[0]?.trim(), text:p[1]?.trim() };
 });
 }
 
-async function speak(text,callback){
+function getVoice(){
+
+let voices=synth.getVoices();
 
 let gender=document.getElementById("voiceSelect").value;
-let voiceID = gender==="male" ? VOICE_MALE : VOICE_FEMALE;
 
-let response = await fetch(
-`https://api.elevenlabs.io/v1/text-to-speech/${voiceID}`,
-{
-method:"POST",
-headers:{
-"xi-api-key":API_KEY,
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-text:text,
-model_id:"eleven_multilingual_v2",
-voice_settings:{
-stability:0.4,
-similarity_boost:0.8
+if(gender==="male"){
+return voices.find(v=>v.lang.includes("ko")) || voices[0];
+}else{
+return voices.find(v=>v.lang.includes("ko")) || voices[0];
 }
-})
-});
 
-let blob=await response.blob();
-let url=URL.createObjectURL(blob);
+}
 
-audioPlayer.src=url;
-audioPlayer.play();
+function speak(text,callback){
 
-audioPlayer.onended=callback;
+let utter=new SpeechSynthesisUtterance(text);
+
+utter.voice=getVoice();
+utter.lang="ko-KR";
+utter.rate=parseFloat(document.getElementById("speed").value);
+utter.pitch=document.getElementById("voiceSelect").value==="male"?0.7:1.3;
+
+utter.onend=callback;
+
+synth.cancel();
+synth.speak(utter);
 
 }
 
 function showLine(){
+
+if(index<0)index=0;
+if(index>=lines.length)index=0;
 
 let line=lines[index];
 
@@ -308,6 +310,26 @@ document.getElementById("display").innerText=line.text;
 speak(line.text,()=>{
 if(autoMode && !paused) autoNext();
 });
+}
+
+}
+
+function showMyLine(){
+
+parseScript();
+
+for(let i=index;i<lines.length;i++){
+if(lines[i].role===role){
+document.getElementById("display").innerText=lines[i].text;
+return;
+}
+}
+
+for(let i=0;i<index;i++){
+if(lines[i].role===role){
+document.getElementById("display").innerText=lines[i].text;
+return;
+}
 }
 
 }
@@ -364,10 +386,8 @@ paused=true;
 
 clearTimeout(autoTimer);
 clearInterval(gaugeTimer);
-audioPlayer.pause();
 
 remainingTime = totalDuration - (Date.now()-startTime);
-if(remainingTime<0) remainingTime=0;
 
 document.getElementById("pauseBtn").style.display="none";
 document.getElementById("resumeBtn").style.display="block";
@@ -405,6 +425,7 @@ document.getElementById("resumeBtn").style.display="none";
 clearTimeout(autoTimer);
 clearInterval(gaugeTimer);
 
+document.getElementById("display").innerText="<상대 대사>";
 document.getElementById("gaugeBar").style.width="100%";
 
 }
@@ -424,8 +445,7 @@ let line=lines[index];
 
 if(line.role===role){
 
-// 기존보다 2초 빠르게
-let duration=(line.text.length*80)+4000;
+let duration=(line.text.length*80)+4000; // 2초 빠르게
 
 totalDuration=duration;
 remainingTime=duration;
@@ -467,40 +487,20 @@ clearInterval(gaugeTimer);
 
 }
 
-function showMyLine(){
-
-parseScript();
-
-for(let i=index;i<lines.length;i++){
-if(lines[i].role===role){
-document.getElementById("display").innerText=lines[i].text;
-return;
-}
-}
-
-for(let i=0;i<index;i++){
-if(lines[i].role===role){
-document.getElementById("display").innerText=lines[i].text;
-return;
-}
-}
-
-}
-
 function saveScript(){
-localStorage.setItem("script",scriptInput.value);
-localStorage.setItem("role",roleInput.value);
+localStorage.setItem("script",document.getElementById("scriptInput").value);
+localStorage.setItem("role",document.getElementById("roleInput").value);
 alert("저장됨");
 }
 
 function loadScript(){
-scriptInput.value=localStorage.getItem("script")||"";
-roleInput.value=localStorage.getItem("role")||"";
+document.getElementById("scriptInput").value=localStorage.getItem("script")||"";
+document.getElementById("roleInput").value=localStorage.getItem("role")||"";
 alert("불러옴");
 }
 
-speed.oninput=function(){
-speedVal.innerText=this.value;
+document.getElementById("speed").oninput=function(){
+document.getElementById("speedVal").innerText=this.value;
 }
 
 </script>
