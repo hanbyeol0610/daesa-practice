@@ -5,7 +5,6 @@
 <title>대본 연습</title>
 
 <style>
-  
 body{
 margin:0;
 background:#1a1a1a;
@@ -13,7 +12,6 @@ color:white;
 font-family:Arial;
 }
 
-/* 배너 */
 .banner{
 width:100%;
 max-width:900px;
@@ -24,11 +22,9 @@ overflow:hidden;
 
 .banner img{
 width:100%;
-height:auto;
 display:block;
 }
 
-/* 컨테이너 */
 .container{
 max-width:900px;
 margin:auto;
@@ -54,8 +50,6 @@ textarea{
 width:100%;
 height:260px;
 font-size:16px;
-background:white;
-color:black;
 }
 
 .display{
@@ -161,7 +155,6 @@ flex:1;
 padding:6px 10px;
 font-size:14px;
 }
-
 </style>
 </head>
 
@@ -181,13 +174,13 @@ font-size:14px;
 
 음성:
 <select id="voiceSelect">
-<option value="male" selected>남자</option>
-<option value="female">여자</option>
+<option value="male">남자 (혁)</option>
+<option value="female">여자 (안나 킴)</option>
 </select>
 
 속도:
-<input type="range" min="0" max="5" step="0.1" value="2.5" id="speed">
-<span id="speedVal">2.5</span>
+<input type="range" min="0.5" max="2" step="0.1" value="1" id="speed">
+<span id="speedVal">1</span>
 </div>
 
 <div class="scriptBox">
@@ -269,20 +262,14 @@ return { role:p[0]?.trim(), text:p[1]?.trim() };
 });
 }
 
-function getVoice(){
-let voices=synth.getVoices();
-return voices.find(v=>v.lang.includes("ko")) || voices[0];
-}
-
 function speak(text,callback){
 
 let utter=new SpeechSynthesisUtterance(text);
 let gender=document.getElementById("voiceSelect").value;
 
-utter.voice=getVoice();
 utter.lang="ko-KR";
-utter.rate=parseFloat(document.getElementById("speed").value)/2.5;
-utter.pitch = gender==="male"?0.6:1.3;
+utter.rate=parseFloat(document.getElementById("speed").value);
+utter.pitch = gender==="male"?0.7:1.3;
 utter.onend=callback;
 
 synth.cancel();
@@ -290,9 +277,6 @@ synth.speak(utter);
 }
 
 function showLine(){
-
-if(index<0)index=0;
-if(index>=lines.length)index=0;
 
 let line=lines[index];
 
@@ -361,9 +345,8 @@ paused=true;
 clearTimeout(autoTimer);
 clearInterval(gaugeTimer);
 
-// 남은 시간 계산
 remainingTime = totalDuration - (Date.now()-startTime);
-if(remainingTime < 0) remainingTime = 0;
+if(remainingTime<0) remainingTime=0;
 
 document.getElementById("pauseBtn").style.display="none";
 document.getElementById("resumeBtn").style.display="block";
@@ -374,10 +357,8 @@ function resumeAuto(){
 
 paused=false;
 
-// 시작 시간 재설정 (이어가기 기준)
 startTime = Date.now() - (totalDuration - remainingTime);
 
-// 게이지 이어서 시작
 startGauge(totalDuration);
 
 autoTimer=setTimeout(()=>{
@@ -403,7 +384,6 @@ document.getElementById("resumeBtn").style.display="none";
 clearTimeout(autoTimer);
 clearInterval(gaugeTimer);
 
-document.getElementById("display").innerText="<상대 대사>";
 document.getElementById("gaugeBar").style.width="100%";
 
 }
@@ -423,7 +403,7 @@ let line=lines[index];
 
 if(line.role===role){
 
-let duration=(line.text.length*80)+6000;
+let duration=(line.text.length*80)+4000;
 
 totalDuration=duration;
 remainingTime=duration;
@@ -449,13 +429,11 @@ clearInterval(gaugeTimer);
 
 gaugeTimer=setInterval(()=>{
 
-if(paused) return;
-
 let elapsed=Date.now()-startTime;
 let percent=100-(elapsed/duration)*100;
 
-if(percent < 0) percent = 0;
-if(percent > 100) percent = 100;
+if(percent<0) percent=0;
+if(percent>100) percent=100;
 
 bar.style.width=percent+"%";
 
@@ -465,41 +443,42 @@ clearInterval(gaugeTimer);
 
 },50);
 
-function saveScript(){
-localStorage.setItem("script",document.getElementById("scriptInput").value);
-localStorage.setItem("role",document.getElementById("roleInput").value);
-alert("저장됨");
-}
-
-function loadScript(){
-document.getElementById("scriptInput").value=localStorage.getItem("script")||"";
-document.getElementById("roleInput").value=localStorage.getItem("role")||"";
-alert("불러옴");
-}
-
-document.getElementById("speed").oninput=function(){
-document.getElementById("speedVal").innerText=this.value;
 }
 
 function showMyLine(){
 
 parseScript();
 
-// 현재 위치부터 끝까지 다음 내 대사 찾기
-for(let i=index; i<lines.length; i++){
-    if(lines[i].role === role){
-        document.getElementById("display").innerText = lines[i].text;
-        return;
-    }
+for(let i=index;i<lines.length;i++){
+if(lines[i].role===role){
+document.getElementById("display").innerText=lines[i].text;
+return;
+}
 }
 
-// 끝까지 없으면 처음부터 다시 찾기
-for(let i=0; i<index; i++){
-    if(lines[i].role === role){
-        document.getElementById("display").innerText = lines[i].text;
-        return;
-    }
+for(let i=0;i<index;i++){
+if(lines[i].role===role){
+document.getElementById("display").innerText=lines[i].text;
+return;
 }
+}
+
+}
+
+function saveScript(){
+localStorage.setItem("script",scriptInput.value);
+localStorage.setItem("role",roleInput.value);
+alert("저장됨");
+}
+
+function loadScript(){
+scriptInput.value=localStorage.getItem("script")||"";
+roleInput.value=localStorage.getItem("role")||"";
+alert("불러옴");
+}
+
+speed.oninput=function(){
+speedVal.innerText=this.value;
 }
 
 </script>
