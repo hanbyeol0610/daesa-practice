@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <title>대본 연습</title>
 
+.direction{
+color:gold;
+font-weight:bold;
+}
+
 <style>
 body{
 margin:0;
@@ -190,7 +195,9 @@ font-size:14px;
 대본:
 <textarea id="scriptInput">
 종대: 니 지금 뭐하냐?!
+문이 천천히 열린다
 한별: 아무것도 안했는데요
+잠시 정적이 흐른다
 종대: 거짓말하지 마라
 한별: 거짓말?! 나보다 어려 보이는 고만..확!
 </textarea>
@@ -268,13 +275,35 @@ let startTime=0;
 const synth=window.speechSynthesis;
 
 function parseScript(){
+
 role=document.getElementById("roleInput").value.trim();
+
 lines=document.getElementById("scriptInput").value
 .split("\n")
 .map(l=>{
+
+l=l.trim();
+
+if(!l) return null;
+
+if(l.includes(":")){
 let p=l.split(":");
-return { role:p[0]?.trim(), text:p[1]?.trim() };
-});
+return {
+role:p[0].trim(),
+text:p[1].trim(),
+type:"dialogue"
+};
+}else{
+return {
+role:"direction",
+text:l,
+type:"direction"
+};
+}
+
+})
+.filter(l=>l!==null);
+
 }
 
 function getVoice(){
@@ -313,17 +342,36 @@ if(index<0)index=0;
 if(index>=lines.length)index=0;
 
 let line=lines[index];
+let display=document.getElementById("display");
 
+// 지문이면
+if(line.type==="direction"){
+
+display.innerText="[지문] "+line.text;
+display.className="display direction";
+
+speak(line.text,()=>{
+if(autoMode && !paused) autoNext();
+});
+
+return;
+}
+
+// 내 대사
 if(line.role===role){
-document.getElementById("display").innerText="<내 차례>";
+display.innerText="<내 차례>";
+display.className="display";
 if(autoMode && !paused) autoNext();
 }else{
-document.getElementById("display").innerText=line.text;
+display.innerText=line.text;
+display.className="display";
+
 speak(line.text,()=>{
 if(autoMode && !paused) autoNext();
 });
 }
 
+}
 }
 
 function showMyLine(){
